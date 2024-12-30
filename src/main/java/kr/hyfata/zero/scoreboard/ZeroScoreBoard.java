@@ -1,6 +1,7 @@
 package kr.hyfata.zero.scoreboard;
 
 import fr.mrmicky.fastboard.FastBoard;
+import kr.hyfata.zero.textutil.UniqueText;
 import kr.hyfata.zero.vault.VaultUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,6 +14,7 @@ import static org.bukkit.Bukkit.getServer;
 
 public class ZeroScoreBoard {
     private final Map<UUID, FastBoard> boards = new HashMap<>();
+    UniqueText ut = new UniqueText();
 
     public ZeroScoreBoard(JavaPlugin plugin) {
         getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
@@ -40,9 +42,10 @@ public class ZeroScoreBoard {
     }
 
     private void updateBoard(FastBoard board) {
+        String money = Double.toString(VaultUtil.getBalance(board.getPlayer()));
         board.updateLines(
                 "",
-                "\uE023 §6" + VaultUtil.getBalance(board.getPlayer()),
+                "\uE023§f" + ut.makeBoldtext(money),
                 "",
                 "§b* §7현재 지역: §ftest",
                 ""
