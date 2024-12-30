@@ -6,6 +6,7 @@ import kr.hyfata.zero.vault.VaultUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -42,10 +43,13 @@ public class ZeroScoreBoard {
     }
 
     private void updateBoard(FastBoard board) {
-        String money = Double.toString(VaultUtil.getBalance(board.getPlayer()));
+        double balance = VaultUtil.getBalance(board.getPlayer());
+        DecimalFormat df = new DecimalFormat("#,###"); // 소수점 이하 자리 제거
+        String formattedBalance = df.format(balance);
+
         board.updateLines(
                 "",
-                "\uE023§f" + ut.makeBoldtext(money),
+                "\uE023 §f" + ut.makeBoldtext(formattedBalance),
                 "",
                 "§b* §7현재 지역: §ftest",
                 ""
