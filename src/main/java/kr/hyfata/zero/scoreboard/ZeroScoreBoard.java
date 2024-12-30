@@ -45,7 +45,7 @@ public class ZeroScoreBoard {
         String money = Double.toString(VaultUtil.getBalance(board.getPlayer()));
         board.updateLines(
                 "",
-                "\uE023 §6" + ut.makeBoldtext(money),
+                "\uE023§f" + ut.makeBoldtext(money),
                 "",
                 "§b* §7현재 지역: §ftest",
                 ""
