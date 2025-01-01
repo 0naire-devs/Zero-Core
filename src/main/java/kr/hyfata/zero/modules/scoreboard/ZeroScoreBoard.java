@@ -15,11 +15,11 @@ import static org.bukkit.Bukkit.getServer;
 
 public class ZeroScoreBoard {
     private final Map<UUID, FastBoard> boards = new HashMap<>();
+    private final JavaPlugin plugin;
 
     public ZeroScoreBoard(JavaPlugin plugin) {
-        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setExecutor(new ScoreboardCommand());
-        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setTabCompleter(new ScoreboardCommand());
-        getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
+        this.plugin = plugin;
+        setListeners();
 
         for (Player player : getServer().getOnlinePlayers()) {
             createScoreboard(player);
@@ -33,10 +33,17 @@ public class ZeroScoreBoard {
         plugin.getLogger().info("Zero Scoreboard has been enabled.");
     }
 
+    private void setListeners() {
+        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setExecutor(new ScoreboardCommand());
+        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setTabCompleter(new ScoreboardCommand());
+        getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
+    }
+
     public void onDisable() {
         for (Player player : getServer().getOnlinePlayers()) {
             removeScoreboard(player);
         }
+        plugin.getLogger().info("Zero Scoreboard has been disabled.");
     }
 
     public void createScoreboard(Player player) {
