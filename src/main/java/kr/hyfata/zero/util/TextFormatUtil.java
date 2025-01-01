@@ -1,5 +1,6 @@
 package kr.hyfata.zero.util;
 
+import kr.hyfata.zero.ZeroCore;
 import kr.hyfata.zero.vault.VaultUtil;
 import org.bukkit.entity.Player;
 
@@ -28,6 +29,10 @@ public class TextFormatUtil {
         return text.replace("&","§")
                 .replace("${formattedBalance}", formattedUniqueText(formattedBalance))
                 .replace("${playerName}", player.getName())
-                .replace("${world}", player.getWorld().getName());
+                .replace("${world}", getFormattedWorld(player.getWorld().getName()));
+    }
+
+    public static String getFormattedWorld(String world) {
+        return ZeroCore.configModules.getScoreboardConfig().getString("worlds." + world, world);
     }
 }

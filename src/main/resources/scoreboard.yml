@@ -6,3 +6,6 @@ scoreboard:
     \uE023 &f${formattedBalance}
     
     &b* &7현재 지역: &f${world}
+
+worlds:
+  world: "test"
