@@ -20,11 +20,7 @@ public class ZeroScoreBoard {
     public ZeroScoreBoard(JavaPlugin plugin) {
         this.plugin = plugin;
         setListeners();
-
-        for (Player player : getServer().getOnlinePlayers()) {
-            createScoreboard(player);
-        }
-
+        createScoreboardAllPlayers();
         getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (FastBoard board : this.boards.values()) {
                 updateBoard(board);
@@ -40,10 +36,14 @@ public class ZeroScoreBoard {
     }
 
     public void onDisable() {
-        for (Player player : getServer().getOnlinePlayers()) {
-            removeScoreboard(player);
-        }
+        removeScoreboardAllPlayers();
         plugin.getLogger().info("Zero Scoreboard has been disabled.");
+    }
+
+    public void createScoreboardAllPlayers() {
+        for (Player player : getServer().getOnlinePlayers()) {
+            createScoreboard(player);
+        }
     }
 
     public void createScoreboard(Player player) {
@@ -52,6 +52,12 @@ public class ZeroScoreBoard {
                 ZeroCore.configModules.getScoreboardConfig().getString("scoreboard.title", "&cERROR")));
 
         this.boards.put(player.getUniqueId(), board);
+    }
+
+    public void removeScoreboardAllPlayers() {
+        for (Player player : getServer().getOnlinePlayers()) {
+            removeScoreboard(player);
+        }
     }
 
     public void removeScoreboard(Player player) {

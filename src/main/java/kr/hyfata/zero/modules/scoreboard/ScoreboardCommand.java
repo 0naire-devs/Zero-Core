@@ -19,21 +19,21 @@ public class ScoreboardCommand implements CommandExecutor, TabExecutor {
             switch(args[0]) {
                 case "reload":
                     ZeroCore.configModules.getScoreboardConfig().reloadConfig();
-                    ZeroCore.modules.getZeroScoreBoard().removeScoreboard(p);
-                    ZeroCore.modules.getZeroScoreBoard().createScoreboard(p);
+                    ZeroCore.modules.getZeroScoreBoard().removeScoreboardAllPlayers();
+                    ZeroCore.modules.getZeroScoreBoard().createScoreboardAllPlayers();
                     p.sendMessage("Reloaded config");
                     break;
                 case "on":
                     ZeroCore.modules.getZeroScoreBoard().removeScoreboard(p);
                     ZeroCore.modules.getZeroScoreBoard().createScoreboard(p);
-                    p.sendMessage("Scoreboard is on");
+                    p.sendMessage("§a스코어보드가 켜졌습니다!");
                     break;
                 case "off":
                     ZeroCore.modules.getZeroScoreBoard().removeScoreboard(p);
-                    p.sendMessage("Scoreboard is off");
+                    p.sendMessage("§c스코어보드가 꺼졌습니다!");
                     break;
                 default:
-                    p.sendMessage("Fuck you");
+                    p.sendMessage("잘못된 명령어 입력!");
             }
         }
         return true;
