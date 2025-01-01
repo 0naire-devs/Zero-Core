@@ -1,5 +1,6 @@
-package kr.hyfata.zero.scoreboard;
+package kr.hyfata.zero.modules.scoreboard;
 
+import kr.hyfata.zero.ZeroCore;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,6 +15,9 @@ public class ScoreboardListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!ZeroCore.configModules.getScoreboardConfig().getBoolean("scoreboard.enabled", true)) {
+            return;
+        }
         Player player = event.getPlayer();
         zeroScoreBoard.createScoreboard(player);
     }

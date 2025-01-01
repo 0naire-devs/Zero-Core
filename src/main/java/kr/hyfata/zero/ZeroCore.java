@@ -1,18 +1,26 @@
 package kr.hyfata.zero;
 
-import kr.hyfata.zero.scoreboard.ZeroScoreBoard;
+import kr.hyfata.zero.util.ConfigUtil;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ZeroCore extends JavaPlugin {
+    public static final ZeroConfig configModules = new ZeroConfig();
+    public static final ZeroModules modules = new ZeroModules();
 
     @Override
     public void onEnable() {
-        new ZeroScoreBoard(this);
-        getLogger().info("Zero Scoreboard has been enabled.");
+        ConfigUtil.init(this);
+        initModules();
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        configModules.save();
+        modules.onDisable();
+    }
+
+    private void initModules() {
+        configModules.init(this);
+        modules.init(this);
     }
 }

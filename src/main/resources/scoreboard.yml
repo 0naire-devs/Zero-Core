@@ -1,0 +1,8 @@
+scoreboard:
+  enabled: true
+  title: "&eZERO RPG"
+  message: |
+    
+    \uE023 &f${formattedBalance}
+    
+    &b* &7현재 지역: &f${world}
