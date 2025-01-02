@@ -27,6 +27,7 @@ public class TextFormatUtil {
         String formattedBalance = df.format(balance);
 
         return text.replace("&","§")
+                .replace("\\\\n", "")
                 .replace("${formattedBalance}", formattedUniqueText(formattedBalance))
                 .replace("${playerName}", player.getName())
                 .replace("${world}", getFormattedWorld(player.getWorld().getName()));
