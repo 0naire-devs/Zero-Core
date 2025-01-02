@@ -71,7 +71,7 @@ public class ZeroScoreBoard {
     private void updateBoard(FastBoard board) {
         board.updateLines(TextFormatUtil.getFormattedScoreText(board.getPlayer(),
                 ZeroCore.configModules.getScoreboardConfig().getString("scoreboard.message", "&cERROR"))
-                        .replace("\\\\n", "")
+                        .replace("\\\n", "")
                 .split("\n"));
     }
 }
