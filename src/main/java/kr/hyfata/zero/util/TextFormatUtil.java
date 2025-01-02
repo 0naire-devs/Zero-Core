@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.text.DecimalFormat;
 
 public class TextFormatUtil {
-    public static String formattedUniqueText(String text) {
+    public static String formattedNumber(String text) {
         return text.replace("1", "\uF801\uE024")
                 .replace("2", "\uF801\uE025")
                 .replace("3", "\uF801\uE026")
@@ -28,7 +28,7 @@ public class TextFormatUtil {
 
         return text.replace("&","§")
                 .replace("\\\n", "")
-                .replace("${formattedBalance}", formattedUniqueText(formattedBalance))
+                .replace("${formattedBalance}", formattedNumber(formattedBalance))
                 .replace("${playerName}", player.getName())
                 .replace("${world}", getFormattedWorld(player.getWorld().getName()));
     }
