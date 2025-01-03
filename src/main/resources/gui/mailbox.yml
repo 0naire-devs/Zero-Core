@@ -7,14 +7,17 @@ buttons:
   get_all_rewards:
     pos: 46
     txt: 보상 모두 받기
+    lore:
     item: minecraft:gold
 
   previous:
     pos: 40
-    txt: 이전 페이지
+    txt: ${previous} 페이지
+    lore:
     item: minecraft:arrow
 
   next:
     pos: 53
-    txt: 다음 페이지
+    txt: ${next} 페이지
+    lore:
     item: minecraft:arrow

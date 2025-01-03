@@ -21,16 +21,18 @@ public class TextFormatUtil {
                 .replace(",", "\uF801\uE02E");
     }
 
-    public static String getFormattedScoreText(Player player, String text) {
-        double balance = VaultUtil.getBalance(player);
-        DecimalFormat df = new DecimalFormat("#,###"); // 소수점 이하 자리 제거
-        String formattedBalance = df.format(balance);
-
+    public static String getFormattedText(Player player, String text) {
         return text.replace("&","§")
                 .replace("\\\n", "")
-                .replace("${formattedBalance}", formattedNumber(formattedBalance))
+                .replace("${formattedBalance}", formattedNumber(getFormattedBalance(player)))
                 .replace("${playerName}", player.getName())
                 .replace("${world}", getFormattedWorld(player.getWorld().getName()));
+    }
+
+    private static String getFormattedBalance(Player player) {
+        double balance = VaultUtil.getBalance(player);
+        DecimalFormat df = new DecimalFormat("#,###"); // 소수점 이하 자리 제거
+        return df.format(balance);
     }
 
     public static String getFormattedWorld(String world) {
