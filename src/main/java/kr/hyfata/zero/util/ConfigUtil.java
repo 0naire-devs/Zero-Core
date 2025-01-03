@@ -16,25 +16,30 @@ public class ConfigUtil {
         ConfigUtil.plugin = plugin;
     }
 
-    public static void loadConfig(IConfig iConfig, File configFile) {
+    public static void createConfig(File configFile, String resourcePath) {
         if (!configFile.exists()) {
-            createConfig(configFile);
-        }
-
-        iConfig.setConfig(YamlConfiguration.loadConfiguration(configFile));
-        try {
-            InputStream defConfigStream = plugin.getResource(configFile.getName());
-            if (defConfigStream != null) {
-                YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, StandardCharsets.UTF_8));
-                iConfig.getConfig().setDefaults(defConfig);
-            }
-        } catch (Exception e) {
-            plugin.getLogger().severe("Could not load config: " + e.getMessage());
+            plugin.saveResource(resourcePath, false); // copy jar resources config
         }
     }
 
-    public static void createConfig(File configFile) {
-        configFile.getParentFile().mkdirs();
-        plugin.saveResource(configFile.getName(), false); // copy resources config
+    public static void loadConfig(IConfig iConfig, File configFile, String resourcePath) {
+        iConfig.setConfig(YamlConfiguration.loadConfiguration(configFile)); // load data folder config file
+
+        // set default value
+        try {
+            InputStream defConfigStream = plugin.getResource(resourcePath); // jar resource
+            if (defConfigStream != null) {
+                YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, StandardCharsets.UTF_8));
+                plugin.getConfig().setDefaults(defConfig);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("Could not load jar config: " + e.getMessage());
+        }
+
+        plugin.getLogger().info("Loaded config: " + resourcePath);
+    }
+
+    public static String getSaveConfigErrorMsg(File configFile) {
+        return "Could not save config to " + configFile;
     }
 }

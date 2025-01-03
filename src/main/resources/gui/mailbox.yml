@@ -1,0 +1,20 @@
+mailbox:
+  title: title
+  rows: 6
+  reward_item_rows: [2,5]
+
+buttons:
+  get_all_rewards:
+    pos: 46
+    txt: 보상 모두 받기
+    item: minecraft:gold
+
+  previous:
+    pos: 40
+    txt: 이전 페이지
+    item: minecraft:arrow
+
+  next:
+    pos: 53
+    txt: 다음 페이지
+    item: minecraft:arrow

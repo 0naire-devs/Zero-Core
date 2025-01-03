@@ -7,8 +7,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 
-public class ScoreboardConfig implements IConfig {
-    private final String configFilePath = "scoreboard.yml";
+public class MailboxConfig implements IConfig {
+    private final String configFilePath = "gui/mailbox.yml";
     private File configFile;
     private FileConfiguration config;
     private JavaPlugin plugin;
