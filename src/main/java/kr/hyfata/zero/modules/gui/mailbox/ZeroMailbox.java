@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class ZeroMailbox implements InventoryGUI {
@@ -32,6 +33,8 @@ public class ZeroMailbox implements InventoryGUI {
     public ZeroMailbox(JavaPlugin plugin) {
         this.plugin = plugin;
         InventoryEventListener.registerInventory(this);
+        Objects.requireNonNull(plugin.getCommand("우편함")).setExecutor(new MailboxCommand());
+        Objects.requireNonNull(plugin.getCommand("우편함")).setTabCompleter(new MailboxCommand());
     }
 
     @Override
