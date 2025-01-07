@@ -1,6 +1,7 @@
 package kr.hyfata.zero.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -43,14 +44,19 @@ public class ItemUtil {
         return item;
     }
 
-    public static ItemStack newItemStack(Material material, int num, Component name, Component... lore) {
+    public static ItemStack newItemStack(Material material, int num, Component name, Component... lore) throws Exception {
+        if (material == null) {
+            throw new Exception("Material cannot be null");
+        }
         ItemStack chestItem = new ItemStack(material, 1, (short) num);
         ItemMeta chestMeta = chestItem.getItemMeta();
 
         assert chestMeta != null;
         chestMeta.addItemFlags(ItemFlag.values());
         chestMeta.displayName(name);
-        chestMeta.lore(Arrays.asList(lore));
+        if (lore != null && (lore.length != 1 || !PlainTextComponentSerializer.plainText().serialize(lore[0]).isEmpty())) {
+            chestMeta.lore(Arrays.asList(lore));
+        }
 
         chestItem.setItemMeta(chestMeta);
         return chestItem;

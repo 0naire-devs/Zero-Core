@@ -11,7 +11,7 @@ public class MailboxDB {
     public static ArrayList<Mailbox> getMailbox(Player p) throws SQLException {
         ArrayList<Mailbox> result = new ArrayList<>();
         String uuid = p.getUniqueId().toString();
-        ResultSet rs = ZeroDB.executeQuery("select * from mailbox where uuid = ? order by mail_id", uuid);
+        ResultSet rs = ZeroDB.executeQuery("select * from mailbox where uuid = ? order by sent_time", uuid);
         while (rs.next()) {
             Mailbox mailbox = new Mailbox();
             mailbox.setMailId(rs.getInt("mail_id"));

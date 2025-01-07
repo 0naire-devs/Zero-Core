@@ -21,7 +21,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
         if (args.length != 0) {
             switch(args[0]) {
                 case "reload":
-                    if (p.hasPermission("zeromailbox.reload")) {
+                    if (p.hasPermission("zeromailbox.advenced")) {
                         ZeroCore.configModules.getMailboxConfig().reloadConfig();
                         p.sendMessage("Reloaded config");
                     } else {
@@ -29,16 +29,27 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                     }
                     break;
                 default:
-                    ZeroCore.modules.getZeroMailboxUI().openInventory(p);
+                    p.sendMessage("잘못된 명령어 입력!");
             }
+        } else {
+            ZeroCore.modules.getZeroMailboxUI().openInventory(p);
         }
         return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        List<String> list = Arrays.asList("reload");
-        String input = args[0].toLowerCase();
+        List<String> list = null;
+        switch (args.length) {
+            case 1:
+                if (sender.hasPermission("zeromailbox.advenced")) {
+                    list = Arrays.asList("reload", "아이템지정");
+                }
+                break;
+        }
+        if (list == null)
+            return null;
+        String input = args[args.length - 1].toLowerCase();
 
         List<String> completions = null;
         for (String s : list) {

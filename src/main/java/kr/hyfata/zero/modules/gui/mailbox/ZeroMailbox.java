@@ -9,6 +9,7 @@ import kr.hyfata.zero.util.ItemUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -19,12 +20,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
 
 public class ZeroMailbox implements InventoryGUI {
     private final HashMap<Inventory, MailboxInventoryInfo> inventories = new HashMap<>();
@@ -43,15 +39,15 @@ public class ZeroMailbox implements InventoryGUI {
                 TextFormatUtil.getFormattedText(p, ZeroCore.configModules.getMailboxConfig().getString("mailbox.title", "&cERROR")));
 
         p.openInventory(iv);
-        CompletableFuture.runAsync(() -> {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 MailboxInventoryInfo info = new MailboxInventoryInfo();
                 info.setMailboxes(MailboxDB.getMailbox(p));
                 inventories.put(iv, info);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 p.closeInventory();
                 p.sendMessage("[우편함] 오류가 발생하여 우편함을 볼 수 없습니다!");
-                return;
+                e.printStackTrace(System.err);
             }
             setItems(iv, 1);
         });
@@ -71,14 +67,14 @@ public class ZeroMailbox implements InventoryGUI {
 
         // set mailbox items
         for (int mailboxIndex = startIndex, guiIndex = row1 * 9; mailboxIndex < (startIndex + itemCount); mailboxIndex++, guiIndex++) {
-            if (mailbox == null)
+            if (mailbox == null || mailbox.isEmpty())
                 break;
             if (mailboxIndex < mailbox.size()) {
                 try {
                     ItemStack itemStack = ItemUtil.base64ToItemStack(mailbox.get(mailboxIndex).getItem());
                     List<Component> lore = new ArrayList<>();
                     lore.add(Component.text(""));
-                    lore.add(Component.text(TimeUtil.getRemainingTimeText(mailbox.get(mailboxIndex).getExpiryTime())));
+                    lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(TimeUtil.getRemainingTimeText(mailbox.get(mailboxIndex).getExpiryTime())));
                     iv.setItem(guiIndex, ItemUtil.addLore(itemStack, lore));
                 } catch (InvalidConfigurationException e) {
                     plugin.getLogger().severe("Failed to convert base64 to ItemStack: " + e.getMessage());
@@ -86,21 +82,34 @@ public class ZeroMailbox implements InventoryGUI {
             }
         }
 
-        setButton(iv, "buttons.get_all_rewards", page);
-        if (page != 1)
-            setButton(iv, "buttons.previous", page);
-        if (mailbox != null && startIndex + itemCount > mailbox.size())
-            setButton(iv, "buttons.next", page);
+        try {
+            setButton(iv, "buttons.get_all_rewards", page);
+            if (page != 1)
+                setButton(iv, "buttons.previous", page);
+            if (mailbox != null && startIndex + itemCount < mailbox.size())
+                setButton(iv, "buttons.next", page);
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to convert mailbox to ItemStack: " + e.getMessage());
+        }
     }
 
-    private void setButton(Inventory iv, String path, int page) {
+    private void setButton(Inventory iv, String path, int page) throws Exception {
         IConfig config = ZeroCore.configModules.getMailboxConfig();
         String strPage = Integer.toString(page);
+
+        String[] lore = TextFormatUtil.getFormattedText(config.getString(path + ".lore", ""))
+                .replace("${currentPage}", strPage)
+                .split("\n");
+        List<Component> loreComponent = new ArrayList<>();
+        for (String s : lore) {
+            loreComponent.add(LegacyComponentSerializer.legacyAmpersand().deserialize(s));
+        }
+
         iv.setItem(config.getConfig().getInt(path + ".pos"),
                 ItemUtil.newItemStack(
-                        Material.getMaterial(config.getString(path + ".item", "minecraft:arrow")), 0,
-                        Component.text(TextFormatUtil.getFormattedText(config.getString(path + ".txt", "ERROR")).replace("${currentPage}", strPage)),
-                        Component.text(TextFormatUtil.getFormattedText(config.getString(path + ".lore", "ERROR")).replace("${currentPage}", strPage))
+                        Material.getMaterial(config.getString(path + ".item", "ARROW")), 0,
+                        LegacyComponentSerializer.legacyAmpersand().deserialize(TextFormatUtil.getFormattedText(config.getString(path + ".txt", "ERROR")).replace("${currentPage}", strPage)),
+                        loreComponent.toArray(new Component[0])
                 )
         );
     }
