@@ -22,11 +22,15 @@ public class TextFormatUtil {
     }
 
     public static String getFormattedText(Player player, String text) {
-        return text.replace("&","§")
-                .replace("\\\n", "")
+        return getFormattedText(text)
                 .replace("${formattedBalance}", formattedNumber(getFormattedBalance(player)))
                 .replace("${playerName}", player.getName())
                 .replace("${world}", getFormattedWorld(player.getWorld().getName()));
+    }
+
+    public static String getFormattedText(String text) {
+        return text.replace("&","§")
+                .replace("\\\n", "");
     }
 
     private static String getFormattedBalance(Player player) {

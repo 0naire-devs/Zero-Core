@@ -12,11 +12,9 @@ public class InventoryEventListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getCurrentItem() != null && !e.getCurrentItem().getType().isAir()) {
-            for (InventoryGUI menu : inventories) {
-                if (menu.contains(e.getInventory())) {
-                    menu.inventoryClickEvent(e);
-                }
+        for (InventoryGUI menu : inventories) {
+            if (menu.contains(e.getInventory())) {
+                menu.inventoryClickEvent(e);
             }
         }
     }

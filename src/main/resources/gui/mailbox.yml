@@ -1,7 +1,8 @@
 mailbox:
   title: title
   rows: 6
-  reward_item_rows: [2,5]
+  reward_item_row1: 2
+  reward_item_row2: 5
 
 buttons:
   get_all_rewards:
@@ -12,12 +13,12 @@ buttons:
 
   previous:
     pos: 40
-    txt: ${previous} 페이지
+    txt: 이전 페이지
     lore:
     item: minecraft:arrow
 
   next:
     pos: 53
-    txt: ${next} 페이지
+    txt: 다음 페이지
     lore:
     item: minecraft:arrow
