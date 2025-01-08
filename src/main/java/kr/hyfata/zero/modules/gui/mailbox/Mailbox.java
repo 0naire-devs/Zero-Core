@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class Mailbox {
     private int mailId;
+    private String uuid;
     private byte[] item;
     private Timestamp expiryTime = null;
     private Timestamp sentTime = null;
@@ -14,6 +15,14 @@ public class Mailbox {
 
     public void setMailId(int mailId) {
         this.mailId = mailId;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public byte[] getItem() {
