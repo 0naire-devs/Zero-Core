@@ -11,14 +11,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class MailboxCommand implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = (Player) sender;
-        if (args.length != 0) {
+        if (sender.hasPermission("zeromailbox.advenced") && args.length != 0) {
             switch(args[0]) {
                 case "reload":
                     if (p.hasPermission("zeromailbox.advenced")) {
@@ -39,13 +38,34 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!sender.hasPermission("zeromailbox.advenced")) {
+            return null;
+        }
         List<String> list = null;
         switch (args.length) {
-            case 1:
-                if (sender.hasPermission("zeromailbox.advenced")) {
-                    list = Arrays.asList("reload", "아이템지정");
+            case 1: {
+                list = Arrays.asList("전체발송", "발송", "reload");
+                break;
+            }
+            case 2: {
+                if (args[0].equals("전체발송")) {
+                    list = Arrays.asList("만료_날짜입력:", "2025-01-11");
                 }
                 break;
+            }
+            case 3: {
+                if (args[0].equals("전체발송")) {
+                    list = Arrays.asList("만료_시간입력(24시간제):", "13:00:30");
+                } else if (args[0].equals("발송")) {
+                    list = Arrays.asList("만료_날짜입력:", "2025-01-11");
+                }
+                break;
+            }
+            case 4: {
+                if (args[0].equals("발송")) {
+                    list = Arrays.asList("만료_시간입력(24시간제):", "13:00:30");
+                }
+            }
         }
         if (list == null)
             return null;
@@ -61,9 +81,9 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
             }
         }
 
-        if (completions != null) {
-            Collections.sort(completions);
-        }
+//        if (completions != null) {
+//            Collections.sort(completions);
+//        }
         return completions;
     }
 }

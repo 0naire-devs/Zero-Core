@@ -183,6 +183,7 @@ public class ZeroMailbox implements InventoryGUI {
                 int idx = e.getSlot() - (guiRow1 - 1) * 9;
                 try {
                     getReward((Player) e.getWhoClicked(), e.getInventory(), idx);
+                    setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
                 } catch (InvalidConfigurationException | SQLException ex) {
                     plugin.getLogger().severe("Filed to get reward: " + ex.getMessage());
                     ex.printStackTrace(System.err);
@@ -206,6 +207,7 @@ public class ZeroMailbox implements InventoryGUI {
                 plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
             }
         }
+        setItems(e.getInventory(), 1); // goto first page
     }
 
     private void setTempItem(Material material, InventoryClickEvent e, String name, String... lore) {
