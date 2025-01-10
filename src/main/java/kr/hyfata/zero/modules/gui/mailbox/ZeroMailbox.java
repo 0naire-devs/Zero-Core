@@ -154,14 +154,27 @@ public class ZeroMailbox implements InventoryGUI {
         }
 
         if (InventoryUtil.isValidItem(e)) {
+            ArrayList<Mailbox> mailboxes = inventories.get(e.getInventory()).getMailboxes();
             IConfig config = ZeroCore.configModules.getMailboxConfig();
             Inventory iv = e.getInventory();
 
-            if (e.getSlot() == config.getConfig().getInt("buttons.get_all_rewards.pos")) {
-                getAllRewards(e);
-            } else if (e.getSlot() == config.getConfig().getInt("buttons.previous.pos")) {
+            int getAllRewardButtonPos = config.getConfig().getInt("buttons.get_all_rewards.pos");
+            int previousButtonPos = config.getConfig().getInt("buttons.previous.pos");
+            int nextButtonPos = config.getConfig().getInt("buttons.next.pos");
+
+            if (e.getSlot() == getAllRewardButtonPos) { // get all rewards
+                if (mailboxes.isEmpty()) {
+                    setTempItem(Material.RED_CONCRETE, e, "&c이미 모든 보상을 수령했습니다!");
+                } else if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
+                    setTempItem(Material.RED_CONCRETE, e, "&c우편물 수령 불가!",
+                            "&7인벤토리 공간이 충분하지 않습니다.",
+                            "&7인벤토리 공간을 충분히 확보한 후 다시 시도해주세요!");
+                } else {
+                    getAllRewards(e);
+                }
+            } else if (e.getSlot() == previousButtonPos) {
                 setItems(iv, inventories.get(iv).getCurrentPage() - 1); // goto previous page
-            } else if (e.getSlot() == config.getConfig().getInt("buttons.next.pos")) {
+            } else if (e.getSlot() == nextButtonPos) {
                 setItems(iv, inventories.get(iv).getCurrentPage() + 1); // goto next page
             } else if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
                 setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다.");
@@ -180,24 +193,17 @@ public class ZeroMailbox implements InventoryGUI {
 
     private void getAllRewards(InventoryClickEvent e) {
         ArrayList<Mailbox> mailboxes = inventories.get(e.getInventory()).getMailboxes();
-        if (mailboxes.isEmpty()) {
-            setTempItem(Material.RED_CONCRETE, e, "&c이미 모든 보상을 수령했습니다!");
-        } else if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
-            setTempItem(Material.RED_CONCRETE, e, "&c우편물 수령 불가!",
-                    "&7인벤토리 공간이 충분하지 않습니다.",
-                    "&7인벤토리 공간을 충분히 확보한 후 다시 시도해주세요!");
-        } else { // get rewards
-            for (int i = 0; i < mailboxes.size(); i++) {
-                if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
-                    setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다!", "&c여유 공간을 확보해주세요!");
-                    break;
-                }
-                try {
-                    getReward((Player) e.getWhoClicked(), e.getInventory(), i);
-                } catch (InvalidConfigurationException | SQLException ex) {
-                    setTempItem(Material.RED_CONCRETE, e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
-                    plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
-                }
+        for (int i = 0; i < mailboxes.size(); i++) {
+            if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
+                setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다!", "&c여유 공간을 확보해주세요!");
+                break;
+            }
+
+            try {
+                getReward((Player) e.getWhoClicked(), e.getInventory(), i);
+            } catch (InvalidConfigurationException | SQLException ex) {
+                setTempItem(Material.RED_CONCRETE, e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
+                plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
             }
         }
     }
