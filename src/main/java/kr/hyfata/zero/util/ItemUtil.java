@@ -1,6 +1,7 @@
 package kr.hyfata.zero.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -56,22 +57,23 @@ public class ItemUtil {
         chestMeta.displayName(name);
         if (lore != null && (lore.length != 1 || !PlainTextComponentSerializer.plainText().serialize(lore[0]).isEmpty())) {
             chestMeta.lore(Arrays.asList(lore));
+        } else {
+            chestMeta.lore(null);
         }
 
         chestItem.setItemMeta(chestMeta);
         return chestItem;
     }
 
-    public static ItemStack newItemStack(Material material, int num, Component name) {
-        ItemStack chestItem = new ItemStack(material, 1, (short) num);
-        ItemMeta chestMeta = chestItem.getItemMeta();
+    public static ItemStack newItemStack(Material material, int num, String name, String... lore) throws Exception {
+        Component convertedName = LegacyComponentSerializer.legacyAmpersand().deserialize(name);
 
-        assert chestMeta != null;
-        chestMeta.addItemFlags(ItemFlag.values());
-        chestMeta.displayName(name);
-        chestMeta.lore(null);
+        List<Component> loreComponent = new ArrayList<>();
+        for (String s : lore) {
+            loreComponent.add(LegacyComponentSerializer.legacyAmpersand().deserialize(s));
+        }
+        Component[] convertedLore = loreComponent.toArray(new Component[0]);
 
-        chestItem.setItemMeta(chestMeta);
-        return chestItem;
+        return newItemStack(material, num, convertedName, convertedLore);
     }
 }

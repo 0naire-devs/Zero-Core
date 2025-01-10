@@ -20,6 +20,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class ZeroMailbox implements InventoryGUI {
@@ -66,12 +67,18 @@ public class ZeroMailbox implements InventoryGUI {
         int mailboxStartIndex = (page - 1) * itemCount; // var mailbox's start index
 
         // set mailbox items
-        for (int mailboxIndex = mailboxStartIndex, guiIndex = guiRow1 * 9; mailboxIndex < (mailboxStartIndex + itemCount); mailboxIndex++, guiIndex++) {
+        for (int mailboxIndex = mailboxStartIndex, guiIndex = (guiRow1 - 1) * 9; mailboxIndex < (mailboxStartIndex + itemCount); mailboxIndex++, guiIndex++) {
             if (mailboxes == null || mailboxes.isEmpty())
                 break;
             if (mailboxIndex < mailboxes.size()) {
                 // remove expired items
                 if (TimeUtil.isExpired(mailboxes.get(mailboxIndex).getExpiryTime())) {
+                    try {
+                        MailboxDB.deleteMailbox(mailboxes.get(mailboxIndex).getMailId());
+                    } catch (SQLException e) {
+                        plugin.getLogger().severe("Failed to delete expired mailbox from DB: " + e.getMessage());
+                        e.printStackTrace(System.err);
+                    }
                     mailboxes.remove(mailboxIndex);
                     mailboxIndex--;
                     guiIndex--;
@@ -85,11 +92,11 @@ public class ZeroMailbox implements InventoryGUI {
 
         // set buttons
         try {
-            setButton(iv, "buttons.get_all_rewards", page);
+            setNavButton(iv, "buttons.get_all_rewards", page);
             if (page != 1)
-                setButton(iv, "buttons.previous", page);
+                setNavButton(iv, "buttons.previous", page);
             if (mailboxes != null && mailboxStartIndex + itemCount < mailboxes.size())
-                setButton(iv, "buttons.next", page);
+                setNavButton(iv, "buttons.next", page);
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to convert mailbox to ItemStack: " + e.getMessage());
         }
@@ -109,31 +116,25 @@ public class ZeroMailbox implements InventoryGUI {
         }
     }
 
-    private void setButton(Inventory iv, String path, int page) throws Exception {
+    private void setNavButton(Inventory iv, String path, int page) throws Exception {
         IConfig config = ZeroCore.configModules.getMailboxConfig();
         String strPage = Integer.toString(page);
 
+        // set item name
+        String name = TextFormatUtil.getFormattedText(config.getString(path + ".txt", "ERROR"))
+                .replace("${currentPage}", strPage);
+
         // set item lore
-        List<Component> loreComponent = new ArrayList<>();
         String[] lore = TextFormatUtil.getFormattedText(config.getString(path + ".lore", ""))
                 .replace("${currentPage}", strPage)
                 .split("\n");
-        for (String s : lore) {
-            loreComponent.add(LegacyComponentSerializer.legacyAmpersand().deserialize(s));
-        }
 
-        // set item name
-        Component nameComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(
-                TextFormatUtil.getFormattedText(config.getString(path + ".txt", "ERROR"))
-                        .replace("${currentPage}", strPage)
-        );
-
-        // set item
+        // set item(nav button)
         iv.setItem(config.getConfig().getInt(path + ".pos"),
                 ItemUtil.newItemStack(
                         Material.getMaterial(config.getString(path + ".item", "ARROW")), 0,
-                        nameComponent,
-                        loreComponent.toArray(new Component[0])
+                        name,
+                        lore
                 )
         );
     }
@@ -147,6 +148,10 @@ public class ZeroMailbox implements InventoryGUI {
     @Override
     public void inventoryClickEvent(InventoryClickEvent e) {
         e.setCancelled(true);
+        if (e.getInventory().contains(Material.RED_CONCRETE) ||
+                e.getInventory().contains(Material.GREEN_CONCRETE)) {
+            return;
+        }
 
         if (InventoryUtil.isValidItem(e)) {
             IConfig config = ZeroCore.configModules.getMailboxConfig();
@@ -155,24 +160,77 @@ public class ZeroMailbox implements InventoryGUI {
             if (e.getSlot() == config.getConfig().getInt("buttons.get_all_rewards.pos")) {
                 getAllRewards(e);
             } else if (e.getSlot() == config.getConfig().getInt("buttons.previous.pos")) {
-                setItems(iv, inventories.get(iv).getCurrentPage() - 1);
+                setItems(iv, inventories.get(iv).getCurrentPage() - 1); // goto previous page
             } else if (e.getSlot() == config.getConfig().getInt("buttons.next.pos")) {
-                setItems(iv, inventories.get(iv).getCurrentPage() + 1);
+                setItems(iv, inventories.get(iv).getCurrentPage() + 1); // goto next page
+            } else if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
+                setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다.");
+            } else { // get a reward
+                int guiRow1 = config.getConfig().getInt("mailbox.reward_item_row1");
+                int idx = e.getSlot() - (guiRow1 - 1) * 9;
+                try {
+                    getReward((Player) e.getWhoClicked(), e.getInventory(), idx);
+                } catch (InvalidConfigurationException | SQLException ex) {
+                    plugin.getLogger().severe("Filed to get reward: " + ex.getMessage());
+                    ex.printStackTrace(System.err);
+                }
             }
         }
     }
 
     private void getAllRewards(InventoryClickEvent e) {
-        if (inventories.get(e.getInventory()).getMailboxes().isEmpty()) {
-            e.getInventory().close();
-            e.getWhoClicked().sendMessage(TextFormatUtil.getFormattedText("&c이미 모든 보상을 수령했습니다!"));
+        ArrayList<Mailbox> mailboxes = inventories.get(e.getInventory()).getMailboxes();
+        if (mailboxes.isEmpty()) {
+            setTempItem(Material.RED_CONCRETE, e, "&c이미 모든 보상을 수령했습니다!");
+        } else if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
+            setTempItem(Material.RED_CONCRETE, e, "&c우편물 수령 불가!",
+                    "&7인벤토리 공간이 충분하지 않습니다.",
+                    "&7인벤토리 공간을 충분히 확보한 후 다시 시도해주세요!");
+        } else { // get rewards
+            for (int i = 0; i < mailboxes.size(); i++) {
+                if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
+                    setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다!", "&c여유 공간을 확보해주세요!");
+                    break;
+                }
+                try {
+                    getReward((Player) e.getWhoClicked(), e.getInventory(), i);
+                } catch (InvalidConfigurationException | SQLException ex) {
+                    setTempItem(Material.RED_CONCRETE, e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
+                    plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
+                }
+            }
         }
     }
 
-    private void getReward(Player p, Inventory iv, int index) {
+    private void setTempItem(Material material, InventoryClickEvent e, String name, String... lore) {
+        String formattedName = TextFormatUtil.getFormattedText(name);
+        String[] formattedLore = new String[lore.length];
+        for (int i = 0; i < lore.length; i++) {
+            formattedLore[i] = TextFormatUtil.getFormattedText(lore[i]);
+        }
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            InventoryUtil.resetAfterSecond(e);
+            try {
+                e.setCurrentItem(ItemUtil.newItemStack(material, 0, formattedName, formattedLore));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
+
+    private void getReward(Player p, Inventory iv, int index) throws InvalidConfigurationException, SQLException {
         MailboxInventoryInfo info = inventories.get(iv);
         Mailbox mailbox = info.getMailboxes().get(index);
-        p.getInventory().addItem();
+
+        p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
+
+        // db
+        if (mailbox.getUuid().equals("all")) {
+            MailboxDB.readMailbox(p, mailbox.getMailId());
+        } else {
+            MailboxDB.deleteMailbox(mailbox.getMailId());
+        }
     }
 
     @Override
