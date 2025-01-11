@@ -1,6 +1,8 @@
 package kr.hyfata.zero.util;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class TimeUtil {
@@ -21,5 +23,12 @@ public class TimeUtil {
     public static boolean isExpired(Timestamp expire) {
         Timestamp currentTime = new Timestamp(new Date().getTime());
         return currentTime.after(expire);
+    }
+
+    public static Timestamp stringToTimestamp(String timestampString) throws ParseException {
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
+        java.util.Date parsedDate = dateFormat.parse(timestampString);
+        return new Timestamp(parsedDate.getTime());
     }
 }

@@ -1,6 +1,9 @@
 package kr.hyfata.zero.modules.gui.mailbox;
 
 import kr.hyfata.zero.ZeroCore;
+import kr.hyfata.zero.util.MailboxUtil;
+import kr.hyfata.zero.util.TextFormatUtil;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,9 +12,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class MailboxCommand implements CommandExecutor, TabExecutor {
     @Override
@@ -19,14 +24,36 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
         Player p = (Player) sender;
         if (sender.hasPermission("zeromailbox.advenced") && args.length != 0) {
             switch(args[0]) {
-                case "reload":
-                    if (p.hasPermission("zeromailbox.advenced")) {
-                        ZeroCore.configModules.getMailboxConfig().reloadConfig();
-                        p.sendMessage("Reloaded config");
+                case "reload": {
+                    ZeroCore.configModules.getMailboxConfig().reloadConfig();
+                    p.sendMessage("Reloaded config");
+                    break;
+                }
+                case "발송": {
+                    OfflinePlayer target = p.getServer().getOfflinePlayer(args[1]);
+                    if (!target.hasPlayedBefore()) {
+                        sender.sendMessage(TextFormatUtil.getFormattedText("&c플레이어를 찾을 수 없습니다!"));
                     } else {
-                        return false;
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                MailboxUtil.sendMailToPlayer(p, target, args[2], args[3]);
+                            } catch (ParseException e) {
+                                sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
+                            }
+                        });
                     }
                     break;
+                }
+                case "전체발송": {
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            MailboxUtil.sendMailToAll(p, args[1], args[2]);
+                        } catch (ParseException e) {
+                            sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
+                        }
+                    });
+                    break;
+                }
                 default:
                     p.sendMessage("잘못된 명령어 입력!");
             }
@@ -35,6 +62,8 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
         }
         return true;
     }
+
+
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -80,10 +109,6 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                 completions.add(s);
             }
         }
-
-//        if (completions != null) {
-//            Collections.sort(completions);
-//        }
         return completions;
     }
 }

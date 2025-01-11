@@ -16,20 +16,6 @@ public class InventoryUtil {
                 e.getClick() != ClickType.SHIFT_LEFT && e.getClick() != ClickType.SHIFT_RIGHT;
     }
 
-    public static int getEmptySlots(Player player) {
-        Inventory inventory = player.getInventory();
-        int emptySlots = 0;
-
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item == null || item.getType().isAir()) {
-                emptySlots++;
-            }
-        }
-
-        return emptySlots;
-    }
-
     public static void resetAfterSecond(InventoryClickEvent e) {
         ItemStack item = e.getCurrentItem();
         Timer timer = new Timer();

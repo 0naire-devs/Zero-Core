@@ -11,6 +11,7 @@ public final class ZeroCore extends JavaPlugin {
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(new InventoryEventListener(), this);
+        getServer().getPluginManager().registerEvents(new GlobalEventListener(), this);
         ConfigUtil.init(this);
         initModules();
     }

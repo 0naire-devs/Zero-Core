@@ -33,9 +33,9 @@ public class MailboxDB {
         return result;
     }
 
-    public static void putMailbox(Player p, Mailbox mailbox) throws SQLException {
-        String uuid = p.getUniqueId().toString();
-        ZeroDB.executeUpdate("insert into mailbox (uuid, item, expiry_time) values (?, ?, ?)", uuid, mailbox.getItem(), mailbox.getExpiryTime());
+    public static void putMailbox(Mailbox mailbox) throws SQLException {
+        ZeroDB.executeUpdate("insert into mailbox (uuid, item, expiry_time) values (?, ?, ?)",
+                mailbox.getUuid(), mailbox.getItem(), mailbox.getExpiryTime());
     }
 
     public static void readMailbox(Player p, int mailId) throws SQLException {
@@ -45,5 +45,19 @@ public class MailboxDB {
 
     public static void deleteMailbox(int mailId) throws SQLException {
         ZeroDB.executeUpdate("delete from mailbox where mail_id = ?", mailId);
+    }
+
+    public static int getRemainingMailCount(Player p) throws SQLException {
+        String uuid = p.getUniqueId().toString();
+        ResultSet rs = ZeroDB.executeQuery(
+                "SELECT COUNT(m.*) as count " +
+                "FROM mailbox m " +
+                "WHERE m.uuid = ? OR (m.uuid = 'all' AND NOT EXISTS (" +
+                    "SELECT 1 " +
+                    "FROM read_mail r " +
+                    "WHERE r.uuid = ? AND r.mail_id = m.mail_id" +
+                "))", uuid, uuid);
+        rs.next();
+        return rs.getInt("count");
     }
 }
