@@ -16,6 +16,10 @@ import java.text.ParseException;
 public class MailboxUtil {
     public static void sendMailToPlayer(Player sender, OfflinePlayer player, String expireDate, String expireTime) throws ParseException {
         ItemStack itemStack = sender.getInventory().getItemInMainHand();
+        if (itemStack.getType().isAir()) {
+            sender.sendMessage(TextFormatUtil.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"));
+            return;
+        }
         byte[] convertedItem = ItemUtil.itemStackToBase64(itemStack);
 
         Mailbox mailbox = new Mailbox();
@@ -35,6 +39,10 @@ public class MailboxUtil {
 
     public static void sendMailToAll(Player sender, String expireDate, String expireTime) throws ParseException {
         ItemStack itemStack = sender.getInventory().getItemInMainHand();
+        if (itemStack.getType().isAir()) {
+            sender.sendMessage(TextFormatUtil.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"));
+            return;
+        }
         byte[] convertedItem = ItemUtil.itemStackToBase64(itemStack);
 
         Mailbox mailbox = new Mailbox();
