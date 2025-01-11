@@ -188,12 +188,12 @@ public class ZeroMailbox implements InventoryGUI {
                 CompletableFuture.runAsync(() -> {
                     try {
                         getReward((Player) e.getWhoClicked(), e.getInventory(), idx);
+                        setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
                     } catch (InvalidConfigurationException | SQLException ex) {
                         ex.printStackTrace(System.err);
                         e.getWhoClicked().sendMessage(TextFormatUtil.getFormattedText("&c보상을 받는 도중 오류가 발생했습니다!"));
                     }
                 });
-                setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
             }
         }
     }
