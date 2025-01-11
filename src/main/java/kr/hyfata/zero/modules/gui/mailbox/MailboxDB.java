@@ -30,6 +30,7 @@ public class MailboxDB {
             mailbox.setSentTime(rs.getTimestamp("sent_time"));
             result.add(mailbox);
         }
+        rs.close();
         return result;
     }
 
@@ -48,6 +49,7 @@ public class MailboxDB {
     }
 
     public static int getRemainingMailCount(Player p) throws SQLException {
+        int result;
         String uuid = p.getUniqueId().toString();
         ResultSet rs = ZeroDB.executeQuery(
                 "SELECT COUNT(m.*) as count " +
@@ -58,6 +60,8 @@ public class MailboxDB {
                     "WHERE r.uuid = ? AND r.mail_id = m.mail_id" +
                 "))", uuid, uuid);
         rs.next();
-        return rs.getInt("count");
+        result = rs.getInt("count");
+        rs.close();
+        return result;
     }
 }

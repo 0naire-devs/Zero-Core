@@ -47,9 +47,11 @@ public class ZeroMailbox implements InventoryGUI {
                 info.setMailboxes(MailboxDB.getMailbox(p));
                 inventories.put(iv, info);
             } catch (Exception e) {
-                p.closeInventory();
-                p.sendMessage("[우편함] 오류가 발생하여 우편함을 볼 수 없습니다!");
-                e.printStackTrace(System.err);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    p.closeInventory();
+                    p.sendMessage("[우편함] 오류가 발생하여 우편함을 볼 수 없습니다!");
+                    e.printStackTrace(System.err);
+                });
             }
             setItems(iv, 1);
         });
