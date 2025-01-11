@@ -202,15 +202,17 @@ public class ZeroMailbox implements InventoryGUI {
 
     private void getAllRewards(InventoryClickEvent e) {
         ArrayList<Mailbox> mailboxes = inventories.get(e.getInventory()).getMailboxes();
+        int size = mailboxes.size();
         boolean inventoryFull = false;
-        for (int i = 0; i < mailboxes.size(); i++) {
+
+        for (int i = 0; i < size; i++) {
             if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
                 inventoryFull = true;
                 break;
             }
 
             try {
-                getReward((Player) e.getWhoClicked(), e.getInventory(), i);
+                getReward((Player) e.getWhoClicked(), e.getInventory(), 0);
             } catch (InvalidConfigurationException | SQLException ex) {
                 setTempItem(Material.RED_CONCRETE, e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
                 plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
@@ -229,15 +231,15 @@ public class ZeroMailbox implements InventoryGUI {
         MailboxInventoryInfo info = inventories.get(iv);
         Mailbox mailbox = info.getMailboxes().get(index);
 
-        p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
-        inventories.get(iv).getMailboxes().remove(index);
-
         // db
         if (mailbox.getUuid().equals("all")) {
             MailboxDB.readMailbox(p, mailbox.getMailId());
         } else {
             MailboxDB.deleteMailbox(mailbox.getMailId());
         }
+
+        p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
+        inventories.get(iv).getMailboxes().remove(index);
     }
 
     private void setTempItem(Material material, InventoryClickEvent e, String name, String... lore) {
