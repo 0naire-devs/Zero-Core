@@ -22,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class ZeroMailbox implements InventoryGUI {
     private final HashMap<Inventory, MailboxInventoryInfo> inventories = new HashMap<>();
@@ -149,7 +150,9 @@ public class ZeroMailbox implements InventoryGUI {
     public void inventoryClickEvent(InventoryClickEvent e) {
         e.setCancelled(true);
         if (e.getInventory().contains(Material.RED_CONCRETE) ||
-                e.getInventory().contains(Material.GREEN_CONCRETE)) {
+                e.getInventory().contains(Material.GREEN_CONCRETE) ||
+                (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getWhoClicked().getInventory()))
+        ) {
             return;
         }
 
@@ -166,11 +169,11 @@ public class ZeroMailbox implements InventoryGUI {
                 if (mailboxes.isEmpty()) {
                     setTempItem(Material.RED_CONCRETE, e, "&c이미 모든 보상을 수령했습니다!");
                 } else if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
-                    setTempItem(Material.RED_CONCRETE, e, "&c우편물 수령 불가!",
-                            "&7인벤토리 공간이 충분하지 않습니다.",
+                    setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간 부족!",
+                            "&7보상 수령 불가!",
                             "&7인벤토리 공간을 충분히 확보한 후 다시 시도해주세요!");
                 } else {
-                    getAllRewards(e);
+                    CompletableFuture.runAsync(() -> getAllRewards(e));
                 }
             } else if (e.getSlot() == previousButtonPos) {
                 setItems(iv, inventories.get(iv).getCurrentPage() - 1); // goto previous page
@@ -181,22 +184,26 @@ public class ZeroMailbox implements InventoryGUI {
             } else { // get a reward
                 int guiRow1 = config.getConfig().getInt("mailbox.reward_item_row1");
                 int idx = e.getSlot() - (guiRow1 - 1) * 9;
-                try {
-                    getReward((Player) e.getWhoClicked(), e.getInventory(), idx);
-                    setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
-                } catch (InvalidConfigurationException | SQLException ex) {
-                    plugin.getLogger().severe("Filed to get reward: " + ex.getMessage());
-                    ex.printStackTrace(System.err);
-                }
+
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        getReward((Player) e.getWhoClicked(), e.getInventory(), idx);
+                    } catch (InvalidConfigurationException | SQLException ex) {
+                        ex.printStackTrace(System.err);
+                        e.getWhoClicked().sendMessage(TextFormatUtil.getFormattedText("&c보상을 받는 도중 오류가 발생했습니다!"));
+                    }
+                });
+                setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
             }
         }
     }
 
     private void getAllRewards(InventoryClickEvent e) {
         ArrayList<Mailbox> mailboxes = inventories.get(e.getInventory()).getMailboxes();
+        boolean inventoryFull = false;
         for (int i = 0; i < mailboxes.size(); i++) {
             if (InventoryUtil.isInventoryFull((Player) e.getWhoClicked())) {
-                setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다!", "&c여유 공간을 확보해주세요!");
+                inventoryFull = true;
                 break;
             }
 
@@ -205,9 +212,30 @@ public class ZeroMailbox implements InventoryGUI {
             } catch (InvalidConfigurationException | SQLException ex) {
                 setTempItem(Material.RED_CONCRETE, e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
                 plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
+                return;
             }
         }
         setItems(e.getInventory(), 1); // goto first page
+        if (inventoryFull) {
+            setTempItem(Material.RED_CONCRETE, e, "&c인벤토리 공간이 부족합니다!", "&7여유 공간을 확보해주세요!");
+        } else {
+            setTempItem(Material.GREEN_CONCRETE, e, "&a보상을 성공적으로 수령했습니다!");
+        }
+    }
+
+    private void getReward(Player p, Inventory iv, int index) throws InvalidConfigurationException, SQLException {
+        MailboxInventoryInfo info = inventories.get(iv);
+        Mailbox mailbox = info.getMailboxes().get(index);
+
+        p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
+        inventories.get(iv).getMailboxes().remove(index);
+
+        // db
+        if (mailbox.getUuid().equals("all")) {
+            MailboxDB.readMailbox(p, mailbox.getMailId());
+        } else {
+            MailboxDB.deleteMailbox(mailbox.getMailId());
+        }
     }
 
     private void setTempItem(Material material, InventoryClickEvent e, String name, String... lore) {
@@ -225,20 +253,6 @@ public class ZeroMailbox implements InventoryGUI {
                 throw new RuntimeException(ex);
             }
         });
-    }
-
-    private void getReward(Player p, Inventory iv, int index) throws InvalidConfigurationException, SQLException {
-        MailboxInventoryInfo info = inventories.get(iv);
-        Mailbox mailbox = info.getMailboxes().get(index);
-
-        p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
-
-        // db
-        if (mailbox.getUuid().equals("all")) {
-            MailboxDB.readMailbox(p, mailbox.getMailId());
-        } else {
-            MailboxDB.deleteMailbox(mailbox.getMailId());
-        }
     }
 
     @Override
