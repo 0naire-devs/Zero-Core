@@ -3,6 +3,7 @@ package kr.hyfata.zero.modules.gui.mailbox;
 import kr.hyfata.zero.ZeroCore;
 import kr.hyfata.zero.util.MailboxUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
+import kr.hyfata.zero.util.TimeUtil;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -71,6 +72,10 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
             return null;
         }
         List<String> list = null;
+        String currentDateTime = TimeUtil.getCurrentDateTimeString();
+        String currentDate = currentDateTime.split(" ")[0];
+        String currentTime = currentDateTime.split(" ")[1];
+
         switch (args.length) {
             case 1: {
                 list = Arrays.asList("전체발송", "발송", "reload");
@@ -78,21 +83,21 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
             }
             case 2: {
                 if (args[0].equals("전체발송")) {
-                    list = Arrays.asList("만료_날짜입력:", "2025-01-11");
+                    list = Arrays.asList("만료_날짜입력:", currentDate);
                 }
                 break;
             }
             case 3: {
                 if (args[0].equals("전체발송")) {
-                    list = Arrays.asList("만료_시간입력(24시간제):", "13:00:30");
+                    list = Arrays.asList("만료_시간입력(24시간제):", currentTime);
                 } else if (args[0].equals("발송")) {
-                    list = Arrays.asList("만료_날짜입력:", "2025-01-11");
+                    list = Arrays.asList("만료_날짜입력:", currentDate);
                 }
                 break;
             }
             case 4: {
                 if (args[0].equals("발송")) {
-                    list = Arrays.asList("만료_시간입력(24시간제):", "13:00:30");
+                    list = Arrays.asList("만료_시간입력(24시간제):", currentTime);
                 }
             }
         }

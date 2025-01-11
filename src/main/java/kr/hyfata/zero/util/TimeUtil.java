@@ -3,6 +3,8 @@ package kr.hyfata.zero.util;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class TimeUtil {
@@ -30,5 +32,11 @@ public class TimeUtil {
         SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
         java.util.Date parsedDate = dateFormat.parse(timestampString);
         return new Timestamp(parsedDate.getTime());
+    }
+
+    public static String getCurrentDateTimeString() {
+        LocalDateTime now = LocalDateTime.now(); // 현재 날짜와 시간
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 원하는 형식 지정
+        return now.format(formatter); // 포맷된 문자열 반환
     }
 }
