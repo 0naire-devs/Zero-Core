@@ -1,5 +1,7 @@
 package kr.hyfata.zero.modules.gui.mailbox;
 
+import kr.hyfata.zero.modules.mailbox.Mailbox;
+
 import java.util.ArrayList;
 
 public class MailboxInventoryInfo {

@@ -1,7 +1,7 @@
 package kr.hyfata.zero.util;
 
-import kr.hyfata.zero.modules.gui.mailbox.Mailbox;
-import kr.hyfata.zero.modules.gui.mailbox.MailboxDB;
+import kr.hyfata.zero.modules.mailbox.Mailbox;
+import kr.hyfata.zero.modules.mailbox.MailboxDB;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -14,30 +14,15 @@ import java.sql.SQLException;
 import java.text.ParseException;
 
 public class MailboxUtil {
-    public static void sendMailToPlayer(Player sender, OfflinePlayer player, String expireDate, String expireTime) throws ParseException {
-        ItemStack itemStack = sender.getInventory().getItemInMainHand();
-        if (itemStack.getType().isAir()) {
-            sender.sendMessage(TextFormatUtil.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"));
-            return;
-        }
-        byte[] convertedItem = ItemUtil.itemStackToBase64(itemStack);
-
-        Mailbox mailbox = new Mailbox();
-        mailbox.setUuid(player.getUniqueId().toString());
-        mailbox.setItem(convertedItem);
-        mailbox.setExpiryTime(TimeUtil.stringToTimestamp(expireDate + " " + expireTime));
-        try {
-            MailboxDB.putMailbox(mailbox);
-            if (player.isOnline())
-                sendRemainingMailCount(player.getPlayer());
-            sender.sendMessage(TextFormatUtil.getFormattedText("&a우편을 성공적으로 보냈습니다!"));
-        } catch (SQLException e) {
-            sender.sendMessage(TextFormatUtil.getFormattedText("&c우편을 보내는 도중 오류가 발생했습니다!"));
-            e.printStackTrace(System.err);
-        }
+    public static void sendMailToPlayer(Player sender, OfflinePlayer target, String expireDate, String expireTime) throws ParseException {
+        sendMailTo(sender, target.getUniqueId().toString(), expireDate, expireTime);
     }
 
     public static void sendMailToAll(Player sender, String expireDate, String expireTime) throws ParseException {
+        sendMailTo(sender, "all", expireDate, expireTime);
+    }
+
+    private static void sendMailTo(Player sender, String targetUUID, String expireDate, String expireTime) throws ParseException {
         ItemStack itemStack = sender.getInventory().getItemInMainHand();
         if (itemStack.getType().isAir()) {
             sender.sendMessage(TextFormatUtil.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"));
@@ -46,7 +31,7 @@ public class MailboxUtil {
         byte[] convertedItem = ItemUtil.itemStackToBase64(itemStack);
 
         Mailbox mailbox = new Mailbox();
-        mailbox.setUuid("all");
+        mailbox.setUuid(targetUUID);
         mailbox.setItem(convertedItem);
         mailbox.setExpiryTime(TimeUtil.stringToTimestamp(expireDate + " " + expireTime));
         try {

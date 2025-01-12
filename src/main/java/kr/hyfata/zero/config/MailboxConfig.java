@@ -53,6 +53,5 @@ public class MailboxConfig implements IConfig {
     @Override
     public void reloadConfig() {
         ConfigUtil.loadConfig(this, configFile, configFilePath);
-        saveConfig();
     }
 }

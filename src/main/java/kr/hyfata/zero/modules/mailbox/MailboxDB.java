@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.gui.mailbox;
+package kr.hyfata.zero.modules.mailbox;
 
 import kr.hyfata.zero.zeroDBCore.ZeroDB;
 import org.bukkit.entity.Player;
@@ -10,7 +10,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class MailboxDB {
-    public static ArrayList<Mailbox> getMailbox(Player p) throws SQLException {
+    public static ArrayList<Mailbox> getMailboxes(Player p) throws SQLException {
         ArrayList<Mailbox> result = new ArrayList<>();
         String uuid = p.getUniqueId().toString();
         String query = "SELECT m.* " +
