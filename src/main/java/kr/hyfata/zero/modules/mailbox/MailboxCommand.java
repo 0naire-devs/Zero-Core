@@ -1,7 +1,7 @@
 package kr.hyfata.zero.modules.mailbox;
 
 import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.util.MailboxUtil;
+import kr.hyfata.zero.modules.mailbox.util.MailboxUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import org.bukkit.OfflinePlayer;

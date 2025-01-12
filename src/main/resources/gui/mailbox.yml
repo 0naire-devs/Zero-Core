@@ -1,25 +1,42 @@
 mailbox:
-  title: title
+  title: 'title'
   rows: 6
-  reward_item_row1: 2
-  reward_item_row2: 5
+  reward_item_row_start: 2
+  reward_item_row_end: 5
 
 buttons:
   get_all_rewards:
-    pos: 46
+    pos:
+      - 46
+      - 47
+      - 48
     txt: '&e${currentPage} 페이지'
     lore: |2-
 
       &a&l모두 수령
       &r&7우편함에 있는 모든 우편물을 수령합니다.
     item: GOLD_BLOCK
+    custom_model_data: 0
 
   previous:
-    pos: 40
-    txt: 이전 페이지
+    pos:
+      - 52
+    txt: '이전 페이지'
     item: ARROW
+    custom_model_data: 0
 
   next:
-    pos: 53
-    txt: 다음 페이지
+    pos:
+      - 53
+    txt: '다음 페이지'
     item: ARROW
+    custom_model_data: 0
+
+task:
+  error:
+    item: RED_CONCRETE
+    custom_model_data: 0
+
+  success:
+    item: GREEN_CONCRETE
+    custom_model_data: 0

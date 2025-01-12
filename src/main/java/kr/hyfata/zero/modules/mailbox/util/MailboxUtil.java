@@ -1,7 +1,10 @@
-package kr.hyfata.zero.util;
+package kr.hyfata.zero.modules.mailbox.util;
 
 import kr.hyfata.zero.modules.mailbox.Mailbox;
 import kr.hyfata.zero.modules.mailbox.MailboxDB;
+import kr.hyfata.zero.util.ItemUtil;
+import kr.hyfata.zero.util.TextFormatUtil;
+import kr.hyfata.zero.util.TimeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;

@@ -1,12 +1,10 @@
 package kr.hyfata.zero.modules.gui.mailbox;
 
-import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.config.IConfig;
 import kr.hyfata.zero.modules.mailbox.Mailbox;
 import kr.hyfata.zero.modules.mailbox.MailboxDB;
+import kr.hyfata.zero.modules.mailbox.util.MailboxConfigUtil;
 import kr.hyfata.zero.util.InventoryUtil;
 import kr.hyfata.zero.util.ItemUtil;
-import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -44,7 +42,7 @@ public class MailboxGuiHandler {
         return null;
     }
 
-    public void setMailboxItemInventory(Inventory iv, Mailbox mailbox, int guiIndex) {
+    public void setMailboxItemToInventory(Inventory iv, Mailbox mailbox, int guiIndex) {
         try {
             ItemStack itemStack = ItemUtil.base64ToItemStack(mailbox.getItem());
 
@@ -60,53 +58,52 @@ public class MailboxGuiHandler {
         }
     }
 
-    public void setNavButton(Inventory iv, String configPath) {
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
+    public boolean buttonPosContains(MailboxButton button, int pos) {
+        List<Integer> positions = button.getPositions();
+        for (int p : positions) {
+            if (p == pos)
+                return true;
+        }
+        return false;
+    }
 
-        // set item name
-        String name = TextFormatUtil.getFormattedText(config.getString(configPath + ".txt", "ERROR"));
-
-        // set item lore
-        String[] lore = TextFormatUtil.getFormattedText(config.getString(configPath + ".lore", ""))
-                .split("\n");
-
-        // set item(nav button)
-        try {
-            iv.setItem(config.getConfig().getInt(configPath + ".pos"),
-                    ItemUtil.newItemStack(
-                            Material.getMaterial(config.getString(configPath + ".item", "ARROW")), 0,
-                            name,
-                            lore
-                    )
-            );
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to convert config to ItemStack: " + e.getMessage());
-            e.printStackTrace(System.err);
+    public void setNavButton(Inventory iv, MailboxButton button) {
+        List<Integer> positions = button.getPositions();
+        for (int pos : positions) {
+            try {
+                ItemStack item = ItemUtil.newItemStack(
+                        button.getItem(), 0,
+                        button.getName(),
+                        button.getLore()
+                );
+                item.getItemMeta().setCustomModelData(button.getCustomModelData());
+                iv.setItem(pos, item);
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to convert config to ItemStack: " + e.getMessage());
+                e.printStackTrace(System.err);
+            }
         }
     }
 
     public void setItemError(InventoryClickEvent e, String name, String... lore) {
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
-        Material material = Material.getMaterial(config.getString("task.error.item", "RED_CONCRETE"));
-        int customModelData = config.getConfig().getInt("task.error.custom_model_data", 0);
+        Material material = MailboxConfigUtil.getErrorMaterial();
+        int customModelData = MailboxConfigUtil.getErrorCustomModelData();
         InventoryUtil.setTempItem(e, material, customModelData, name, lore);
     }
 
     public void setItemSuccess(InventoryClickEvent e, String name, String... lore) {
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
-        Material material = Material.getMaterial(config.getString("task.success.item", "GREEN_CONCRETE"));
-        int customModelData = config.getConfig().getInt("task.success.custom_model_data", 0);
+        Material material = MailboxConfigUtil.getSuccessMaterial();
+        int customModelData = MailboxConfigUtil.getSuccessCustomModelData();
         InventoryUtil.setTempItem(e, material, customModelData, name, lore);
     }
 
     public boolean containsTaskItem(InventoryClickEvent e) {
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
         Inventory iv = e.getInventory();
 
-        Material err_material = Material.getMaterial(config.getString("task.error.item", "RED_CONCRETE"));
-        int err_customModelData = config.getConfig().getInt("task.error.custom_model_data", 0);
-        Material suc_material = Material.getMaterial(config.getString("task.success.item", "GREEN_CONCRETE"));
-        int suc_customModelData = config.getConfig().getInt("task.success.custom_model_data", 0);
+        Material err_material = MailboxConfigUtil.getErrorMaterial();
+        int err_customModelData = MailboxConfigUtil.getErrorCustomModelData();
+        Material suc_material = MailboxConfigUtil.getSuccessMaterial();
+        int suc_customModelData = MailboxConfigUtil.getSuccessCustomModelData();
 
         return InventoryUtil.inventoryContains(iv, err_material, err_customModelData) ||
                 InventoryUtil.inventoryContains(iv, suc_material, suc_customModelData);

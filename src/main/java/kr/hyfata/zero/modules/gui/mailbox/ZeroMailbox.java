@@ -1,7 +1,5 @@
 package kr.hyfata.zero.modules.gui.mailbox;
 
-import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.config.IConfig;
 import kr.hyfata.zero.modules.gui.InventoryEventListener;
 import kr.hyfata.zero.modules.gui.InventoryGUI;
 import kr.hyfata.zero.modules.mailbox.Mailbox;
@@ -11,6 +9,7 @@ import kr.hyfata.zero.util.InventoryUtil;
 import kr.hyfata.zero.util.ItemUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
+import kr.hyfata.zero.modules.mailbox.util.MailboxConfigUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
@@ -38,8 +37,8 @@ public class ZeroMailbox implements InventoryGUI {
 
     @Override
     public void openInventory(Player p) {
-        Inventory iv = Bukkit.createInventory(p, ZeroCore.configModules.getMailboxConfig().getConfig().getInt("mailbox.rows") * 9,
-                TextFormatUtil.getFormattedText(p, ZeroCore.configModules.getMailboxConfig().getString("mailbox.title", "&cERROR")));
+        Inventory iv = Bukkit.createInventory(p, MailboxConfigUtil.getRows() * 9,
+                TextFormatUtil.getFormattedText(p, MailboxConfigUtil.getMailBoxTitle()));
 
         p.openInventory(iv);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -57,12 +56,10 @@ public class ZeroMailbox implements InventoryGUI {
         iv.clear();
 
         ArrayList<Mailbox> mailboxes = inventories.get(iv).getMailboxes(); // Mailbox items
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
 
-        int guiRow1 = config.getConfig().getInt("mailbox.reward_item_row1");
-        int guiRow2 = config.getConfig().getInt("mailbox.reward_item_row2");
-        int guiStartSlot = (guiRow1 - 1) * 9;
-        int itemCount = (guiRow2 - guiRow1) * 9; // total mailbox item
+        int[] guiRows = MailboxConfigUtil.getRewardItemRowRange();
+        int guiStartSlot = (guiRows[0] - 1) * 9;
+        int itemCount = (guiRows[1] - guiRows[0]) * 9; // total mailbox item
 
         int currentPageStartIndex = (page - 1) * itemCount; // var mailbox's start index
         int currentPageEndIndex = currentPageStartIndex + itemCount;
@@ -82,18 +79,18 @@ public class ZeroMailbox implements InventoryGUI {
                     guiSlot--;
                     continue;
                 }
-                handler.setMailboxItemInventory(iv, mailbox, guiSlot);
+                handler.setMailboxItemToInventory(iv, mailbox, guiSlot);
             } else {
                 break;
             }
         }
 
         // set buttons
-        handler.setNavButton(iv, "buttons.get_all_rewards");
+        handler.setNavButton(iv, MailboxConfigUtil.getAllRewardsButton());
         if (page != 1)
-            handler.setNavButton(iv, "buttons.previous");
+            handler.setNavButton(iv, MailboxConfigUtil.getPreviousButton());
         if (mailboxes != null && currentPageEndIndex < mailboxes.size())
-            handler.setNavButton(iv, "buttons.next");
+            handler.setNavButton(iv, MailboxConfigUtil.getNextButton());
     }
 
     private void deleteMailboxFromDB(int mailId) {
@@ -126,15 +123,11 @@ public class ZeroMailbox implements InventoryGUI {
     }
 
     private void onValidItemClick(InventoryClickEvent e) {
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
         Inventory iv = e.getInventory();
 
-        int previousButtonPos = config.getConfig().getInt("buttons.previous.pos");
-        int nextButtonPos = config.getConfig().getInt("buttons.next.pos");
-
-        if (e.getSlot() == previousButtonPos) {
+        if (handler.buttonPosContains(MailboxConfigUtil.getPreviousButton(), e.getSlot())) {
             setItems(iv, inventories.get(iv).getCurrentPage() - 1); // goto previous page
-        } else if (e.getSlot() == nextButtonPos) {
+        } else if (handler.buttonPosContains(MailboxConfigUtil.getNextButton(), e.getSlot())) {
             setItems(iv, inventories.get(iv).getCurrentPage() + 1); // goto next page
         } else {
             rewardClickEvent(e);
@@ -145,19 +138,17 @@ public class ZeroMailbox implements InventoryGUI {
         Player p = (Player) e.getWhoClicked();
         Inventory iv = e.getInventory();
         ArrayList<Mailbox> mailboxes = inventories.get(iv).getMailboxes();
-        IConfig config = ZeroCore.configModules.getMailboxConfig();
-        int getAllRewardButtonPos = config.getConfig().getInt("buttons.get_all_rewards.pos");
 
         if (InventoryUtil.isInventoryFull((p))) {
             handler.setItemError(e, "&c인벤토리 공간이 부족합니다.");
-        } else if (e.getSlot() == getAllRewardButtonPos) { // get all rewards
+        } else if (handler.buttonPosContains(MailboxConfigUtil.getAllRewardsButton(), e.getSlot())) { // get all rewards
             if (mailboxes.isEmpty()) {
                 handler.setItemError(e, "&c이미 모든 보상을 수령했습니다!");
             } else {
                 CompletableFuture.runAsync(() -> getAllRewards(e));
             }
         } else { // get a reward
-            int guiRow1 = config.getConfig().getInt("mailbox.reward_item_row1");
+            int guiRow1 = MailboxConfigUtil.getRewardItemRowRange()[0];
             int idx = e.getSlot() - (guiRow1 - 1) * 9;
 
             CompletableFuture.runAsync(() -> {
