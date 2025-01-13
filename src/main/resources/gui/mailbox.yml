@@ -10,7 +10,7 @@ buttons:
       - 46
       - 47
       - 48
-    txt: '&e${currentPage} 페이지'
+    txt: '&e${page} 페이지'
     lore: |2-
 
       &a&l모두 수령

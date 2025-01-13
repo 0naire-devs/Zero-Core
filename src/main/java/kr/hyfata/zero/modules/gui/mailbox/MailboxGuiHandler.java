@@ -73,7 +73,7 @@ public class MailboxGuiHandler {
             try {
                 ItemStack item = ItemUtil.newItemStack(
                         button.getItem(), 0,
-                        button.getName().replace("{page}", String.valueOf(page)),
+                        button.getName().replace("${page}", String.valueOf(page)),
                         button.getLore(page)
                 );
                 item.getItemMeta().setCustomModelData(button.getCustomModelData());
