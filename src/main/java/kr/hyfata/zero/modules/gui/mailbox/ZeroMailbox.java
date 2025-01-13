@@ -112,7 +112,8 @@ public class ZeroMailbox implements InventoryGUI {
     public void inventoryClickEvent(InventoryClickEvent e) {
         e.setCancelled(true);
         if (handler.containsTaskItem(e) ||
-                (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getWhoClicked().getInventory()))
+                (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getWhoClicked().getInventory())) ||
+                inventories.get(e.getInventory()).isShouldCancel()
         ) {
             return;
         }
@@ -145,13 +146,18 @@ public class ZeroMailbox implements InventoryGUI {
             if (mailboxes.isEmpty()) {
                 handler.setItemError(e, "&c이미 모든 보상을 수령했습니다!");
             } else {
-                CompletableFuture.runAsync(() -> getAllRewards(e));
+                CompletableFuture.runAsync(() -> {
+                    inventories.get(iv).setShouldCancel(true);
+                    getAllRewards(e);
+                    inventories.get(iv).setShouldCancel(false);
+                });
             }
         } else { // get a reward
             int guiRow1 = MailboxConfigUtil.getRewardItemRowRange()[0];
             int idx = e.getSlot() - (guiRow1 - 1) * 9;
 
             CompletableFuture.runAsync(() -> {
+                inventories.get(iv).setShouldCancel(true);
                 try {
                     getReward(p, iv, idx);
                     setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
@@ -159,6 +165,7 @@ public class ZeroMailbox implements InventoryGUI {
                     ex.printStackTrace(System.err);
                     handler.setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
                 }
+                inventories.get(iv).setShouldCancel(false);
             });
         }
     }
