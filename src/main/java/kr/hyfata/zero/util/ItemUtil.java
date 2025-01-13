@@ -45,27 +45,29 @@ public class ItemUtil {
         return item;
     }
 
-    public static ItemStack newItemStack(Material material, int num, Component name, Component... lore) throws Exception {
+    private static ItemStack newItemStack(Material material, int amount, int customModelData, Component name, Component... lore) {
         if (material == null) {
-            throw new Exception("Material cannot be null");
+            System.err.println(("Material cannot be null"));
+            return null;
         }
-        ItemStack chestItem = new ItemStack(material, 1, (short) num);
-        ItemMeta chestMeta = chestItem.getItemMeta();
+        ItemStack item = new ItemStack(material, amount, (short) 0);
+        ItemMeta meta = item.getItemMeta();
 
-        assert chestMeta != null;
-        chestMeta.addItemFlags(ItemFlag.values());
-        chestMeta.displayName(name);
+        assert meta != null;
+        meta.addItemFlags(ItemFlag.values());
+        meta.displayName(name);
         if (lore != null && (lore.length != 1 || !PlainTextComponentSerializer.plainText().serialize(lore[0]).isEmpty())) {
-            chestMeta.lore(Arrays.asList(lore));
+            meta.lore(Arrays.asList(lore));
         } else {
-            chestMeta.lore(null);
+            meta.lore(null);
         }
+        meta.setCustomModelData(customModelData);
 
-        chestItem.setItemMeta(chestMeta);
-        return chestItem;
+        item.setItemMeta(meta);
+        return item;
     }
 
-    public static ItemStack newItemStack(Material material, int num, String name, String... lore) throws Exception {
+    public static ItemStack newItemStack(Material material, int amount, int customModelData, String name, String... lore) {
         Component convertedName = LegacyComponentSerializer.legacyAmpersand().deserialize(name);
 
         List<Component> loreComponent = new ArrayList<>();
@@ -74,6 +76,6 @@ public class ItemUtil {
         }
         Component[] convertedLore = loreComponent.toArray(new Component[0]);
 
-        return newItemStack(material, num, convertedName, convertedLore);
+        return newItemStack(material, amount, customModelData, convertedName, convertedLore);
     }
 }

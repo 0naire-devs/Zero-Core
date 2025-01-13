@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.text.DecimalFormat;
 
 public class TextFormatUtil {
-    public static String formattedNumber(String text) {
+    public static String numberFont(String text) {
         return text.replace("1", "\uF801\uE024")
                 .replace("2", "\uF801\uE025")
                 .replace("3", "\uF801\uE026")
@@ -23,7 +23,8 @@ public class TextFormatUtil {
 
     public static String getFormattedText(Player player, String text) {
         return getFormattedText(text)
-                .replace("${formattedBalance}", formattedNumber(getFormattedBalance(player)))
+                .replace("${formattedBalance}", numberFont(getFormattedBalance(player)))
+                .replace("${balance}", getFormattedBalance(player))
                 .replace("${playerName}", player.getName())
                 .replace("${world}", getFormattedWorld(player.getWorld().getName()));
     }
@@ -31,6 +32,13 @@ public class TextFormatUtil {
     public static String getFormattedText(String text) {
         return text.replace("&","§")
                 .replace("\\\n", "");
+    }
+
+    public static String[] getFormattedTextList(String... texts) {
+        for (int i = 0; i < texts.length; i++) {
+            texts[i] = getFormattedText(texts[i]);
+        }
+        return texts;
     }
 
     private static String getFormattedBalance(Player player) {

@@ -5,6 +5,7 @@ import kr.hyfata.zero.modules.mailbox.MailboxDB;
 import kr.hyfata.zero.modules.mailbox.util.MailboxConfigUtil;
 import kr.hyfata.zero.util.InventoryUtil;
 import kr.hyfata.zero.util.ItemUtil;
+import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MailboxGuiHandler {
@@ -58,6 +60,19 @@ public class MailboxGuiHandler {
         }
     }
 
+
+    public void setNavButton(Inventory iv, MailboxButton button, int page) {
+        List<Integer> positions = button.getPositions();
+        for (int pos : positions) {
+            ItemStack item = ItemUtil.newItemStack(
+                    button.getItem(), 1, button.getCustomModelData(),
+                    button.getName().replace("${page}", String.valueOf(page)),
+                    button.getLore(page)
+            );
+            iv.setItem(pos, item);
+        }
+    }
+
     public boolean buttonPosContains(MailboxButton button, int pos) {
         List<Integer> positions = button.getPositions();
         for (int p : positions) {
@@ -67,34 +82,41 @@ public class MailboxGuiHandler {
         return false;
     }
 
-    public void setNavButton(Inventory iv, MailboxButton button, int page) {
-        List<Integer> positions = button.getPositions();
-        for (int pos : positions) {
-            try {
-                ItemStack item = ItemUtil.newItemStack(
-                        button.getItem(), 0,
-                        button.getName().replace("${page}", String.valueOf(page)),
-                        button.getLore(page)
-                );
-                item.getItemMeta().setCustomModelData(button.getCustomModelData());
-                iv.setItem(pos, item);
-            } catch (Exception e) {
-                plugin.getLogger().severe("Failed to convert config to ItemStack: " + e.getMessage());
-                e.printStackTrace(System.err);
-            }
-        }
+    public List<Integer> getButtonPos(int pos) {
+        MailboxButton getAllRewardsButton = MailboxConfigUtil.getAllRewardsButton();
+        MailboxButton previousButton = MailboxConfigUtil.getPreviousButton();
+        MailboxButton nextButton = MailboxConfigUtil.getNextButton();
+
+        if (buttonPosContains(getAllRewardsButton, pos))
+            return getAllRewardsButton.getPositions();
+        if (buttonPosContains(previousButton, pos))
+            return previousButton.getPositions();
+        if (buttonPosContains(nextButton, pos))
+            return nextButton.getPositions();
+
+        return Collections.singletonList(pos);
     }
 
     public void setItemError(InventoryClickEvent e, String name, String... lore) {
-        Material material = MailboxConfigUtil.getErrorMaterial();
+        Material errMaterial = MailboxConfigUtil.getErrorMaterial();
+        String formattedName = TextFormatUtil.getFormattedText(name);
+        String[] formattedLore = TextFormatUtil.getFormattedTextList(lore);
         int customModelData = MailboxConfigUtil.getErrorCustomModelData();
-        InventoryUtil.setTempItem(e, material, customModelData, name, lore);
+        List<Integer> positions = getButtonPos(e.getSlot());
+
+        ItemStack errorItem = ItemUtil.newItemStack(errMaterial, 1, customModelData, formattedName, formattedLore);
+        InventoryUtil.setTempItem(e.getInventory(), errorItem, e.getCurrentItem(), positions.stream().mapToInt(Integer::intValue).toArray());
     }
 
     public void setItemSuccess(InventoryClickEvent e, String name, String... lore) {
         Material material = MailboxConfigUtil.getSuccessMaterial();
+        String formattedName = TextFormatUtil.getFormattedText(name);
+        String[] formattedLore = TextFormatUtil.getFormattedTextList(lore);
         int customModelData = MailboxConfigUtil.getSuccessCustomModelData();
-        InventoryUtil.setTempItem(e, material, customModelData, name, lore);
+        List<Integer> positions = getButtonPos(e.getSlot());
+
+        ItemStack item = ItemUtil.newItemStack(material, 1, customModelData, formattedName, formattedLore);
+        InventoryUtil.setTempItem(e.getInventory(), item, e.getCurrentItem(), positions.stream().mapToInt(Integer::intValue).toArray());
     }
 
     public boolean containsTaskItem(InventoryClickEvent e) {

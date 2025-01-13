@@ -18,46 +18,22 @@ public class InventoryUtil {
                 e.getClick() != ClickType.SHIFT_LEFT && e.getClick() != ClickType.SHIFT_RIGHT;
     }
 
-    public static void resetAfterSecond(InventoryClickEvent e) {
-        ItemStack item = e.getCurrentItem();
+    public static void resetAfterSecond(Inventory iv, ItemStack item, int... slot) {
         Timer timer = new Timer();
         timer.schedule(new java.util.TimerTask() {
             @Override
             public void run() {
-                e.getInventory().setItem(e.getSlot(), item);
+                for (int s : slot) {
+                    iv.setItem(s, item);
+                }
             }
         }, 1000);
     }
 
-    public static void setTempItem(InventoryClickEvent e, Material material, String name, String... lore) {
-        String formattedName = TextFormatUtil.getFormattedText(name);
-        String[] formattedLore = new String[lore.length];
-        for (int i = 0; i < lore.length; i++) {
-            formattedLore[i] = TextFormatUtil.getFormattedText(lore[i]);
-        }
-
-        InventoryUtil.resetAfterSecond(e);
-        try {
-            e.setCurrentItem(ItemUtil.newItemStack(material, 0, formattedName, formattedLore));
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err); // material is null
-        }
-    }
-
-    public static void setTempItem(InventoryClickEvent e, Material material, int customModelData, String name, String... lore) {
-        String formattedName = TextFormatUtil.getFormattedText(name);
-        String[] formattedLore = new String[lore.length];
-        for (int i = 0; i < lore.length; i++) {
-            formattedLore[i] = TextFormatUtil.getFormattedText(lore[i]);
-        }
-
-        try {
-            ItemStack itemStack = ItemUtil.newItemStack(material, 0, formattedName, formattedLore);
-            itemStack.getItemMeta().setCustomModelData(customModelData);
-            InventoryUtil.resetAfterSecond(e);
-            e.setCurrentItem(itemStack);
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err); // material is null
+    public static void setTempItem(Inventory iv, ItemStack tempItem, ItemStack afterItem, int... slot) {
+        InventoryUtil.resetAfterSecond(iv, afterItem, slot);
+        for (int s : slot) {
+            iv.setItem(s, tempItem);
         }
     }
 
