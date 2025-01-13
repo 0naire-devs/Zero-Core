@@ -67,14 +67,14 @@ public class MailboxGuiHandler {
         return false;
     }
 
-    public void setNavButton(Inventory iv, MailboxButton button) {
+    public void setNavButton(Inventory iv, MailboxButton button, int page) {
         List<Integer> positions = button.getPositions();
         for (int pos : positions) {
             try {
                 ItemStack item = ItemUtil.newItemStack(
                         button.getItem(), 0,
-                        button.getName(),
-                        button.getLore()
+                        button.getName().replace("{page}", String.valueOf(page)),
+                        button.getLore(page)
                 );
                 item.getItemMeta().setCustomModelData(button.getCustomModelData());
                 iv.setItem(pos, item);

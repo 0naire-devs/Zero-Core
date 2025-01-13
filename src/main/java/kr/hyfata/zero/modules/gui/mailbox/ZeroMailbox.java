@@ -86,11 +86,11 @@ public class ZeroMailbox implements InventoryGUI {
         }
 
         // set buttons
-        handler.setNavButton(iv, MailboxConfigUtil.getAllRewardsButton());
+        handler.setNavButton(iv, MailboxConfigUtil.getAllRewardsButton(), page);
         if (page != 1)
-            handler.setNavButton(iv, MailboxConfigUtil.getPreviousButton());
+            handler.setNavButton(iv, MailboxConfigUtil.getPreviousButton(), page);
         if (mailboxes != null && currentPageEndIndex < mailboxes.size())
-            handler.setNavButton(iv, MailboxConfigUtil.getNextButton());
+            handler.setNavButton(iv, MailboxConfigUtil.getNextButton(), page);
     }
 
     private void deleteMailboxFromDB(int mailId) {
