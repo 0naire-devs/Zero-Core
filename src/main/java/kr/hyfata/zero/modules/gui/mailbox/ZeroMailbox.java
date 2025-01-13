@@ -146,8 +146,11 @@ public class ZeroMailbox implements InventoryGUI {
             if (mailboxes.isEmpty()) {
                 handler.setItemError(e, "&c이미 모든 보상을 수령했습니다!");
             } else {
+                if (inventories.get(iv).isShouldCancel()) {
+                    return;
+                }
+                inventories.get(iv).setShouldCancel(true);
                 CompletableFuture.runAsync(() -> {
-                    inventories.get(iv).setShouldCancel(true);
                     getAllRewards(e);
                     inventories.get(iv).setShouldCancel(false);
                 });
@@ -156,8 +159,11 @@ public class ZeroMailbox implements InventoryGUI {
             int guiRow1 = MailboxConfigUtil.getRewardItemRowRange()[0];
             int idx = e.getSlot() - (guiRow1 - 1) * 9;
 
+            if (inventories.get(iv).isShouldCancel()) {
+                return;
+            }
+            inventories.get(iv).setShouldCancel(true);
             CompletableFuture.runAsync(() -> {
-                inventories.get(iv).setShouldCancel(true);
                 try {
                     getReward(p, iv, idx);
                     setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
