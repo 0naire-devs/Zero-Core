@@ -157,7 +157,7 @@ public class ZeroMailbox implements InventoryGUI {
                     setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
                 } catch (InvalidConfigurationException | SQLException ex) {
                     ex.printStackTrace(System.err);
-                    p.sendMessage(TextFormatUtil.getFormattedText("&c보상을 받는 도중 오류가 발생했습니다!"));
+                    handler.setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
                 }
             });
         }
