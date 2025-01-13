@@ -26,13 +26,13 @@ public class MailboxButton {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public String getLore(int page) {
+
+    public String[] getLore(int page) {
         String[] result = new String[lore.length];
         for (int i = 0; i < lore.length; i++) {
             result[i] = lore[i].replace("${page}", String.valueOf(page));
         }
-        return String.join("\n", result);
+        return result;
     }
 
     public void setLore(String[] lore) {
