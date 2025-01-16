@@ -10,12 +10,16 @@ import kr.hyfata.zero.util.ItemUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import kr.hyfata.zero.modules.mailbox.util.MailboxConfigUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -24,15 +28,22 @@ import java.util.concurrent.CompletableFuture;
 
 public class ZeroMailbox implements InventoryGUI {
     private final HashMap<Inventory, MailboxInventoryInfo> inventories = new HashMap<>();
-    private final MailboxGuiHandler handler;
     JavaPlugin plugin;
 
     public ZeroMailbox(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.handler = new MailboxGuiHandler(plugin);
         InventoryEventListener.registerInventory(this);
         Objects.requireNonNull(plugin.getCommand("우편함")).setExecutor(new MailboxCommand());
         Objects.requireNonNull(plugin.getCommand("우편함")).setTabCompleter(new MailboxCommand());
+        cleanupExpiredMailboxes();
+        scheduleDailyCleanup();
+    }
+
+    public void onDisable() {
+        for (Inventory inv : inventories.keySet()) {
+            inv.close();
+        }
+        cleanupExpiredMailboxes();
     }
 
     @Override
@@ -42,7 +53,7 @@ public class ZeroMailbox implements InventoryGUI {
 
         p.openInventory(iv);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            MailboxInventoryInfo info = handler.createMailboxInventoryInfo(p);
+            MailboxInventoryInfo info = createMailboxInventoryInfo(p);
             if (info == null)
                 return;
 
@@ -51,7 +62,7 @@ public class ZeroMailbox implements InventoryGUI {
         });
     }
 
-    public void setItems(Inventory iv, int page) {
+    private void setItems(Inventory iv, int page) {
         inventories.get(iv).setCurrentPage(page);
         iv.clear();
 
@@ -79,18 +90,18 @@ public class ZeroMailbox implements InventoryGUI {
                     guiSlot--;
                     continue;
                 }
-                handler.setMailboxItemToInventory(iv, mailbox, guiSlot);
+                setMailboxItemToInventory(iv, mailbox, guiSlot);
             } else {
                 break;
             }
         }
 
         // set buttons
-        handler.setNavButton(iv, MailboxConfigUtil.getAllRewardsButton(), page);
+        setNavButton(iv, MailboxConfigUtil.getAllRewardsButton(), page);
         if (page != 1)
-            handler.setNavButton(iv, MailboxConfigUtil.getPreviousButton(), page);
+            setNavButton(iv, MailboxConfigUtil.getPreviousButton(), page);
         if (mailboxes != null && currentPageEndIndex < mailboxes.size())
-            handler.setNavButton(iv, MailboxConfigUtil.getNextButton(), page);
+            setNavButton(iv, MailboxConfigUtil.getNextButton(), page);
     }
 
     private void deleteMailboxFromDB(int mailId) {
@@ -102,16 +113,10 @@ public class ZeroMailbox implements InventoryGUI {
         }
     }
 
-    public void onDisable() {
-        for (Inventory inv : inventories.keySet()) {
-            inv.close();
-        }
-    }
-
     @Override
     public void inventoryClickEvent(InventoryClickEvent e) {
         e.setCancelled(true);
-        if (handler.containsTaskItem(e) ||
+        if (containsTaskItem(e) ||
                 (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getWhoClicked().getInventory())) ||
                 inventories.get(e.getInventory()).isShouldCancel()
         ) {
@@ -126,9 +131,9 @@ public class ZeroMailbox implements InventoryGUI {
     private void onValidItemClick(InventoryClickEvent e) {
         Inventory iv = e.getInventory();
 
-        if (handler.buttonPosContains(MailboxConfigUtil.getPreviousButton(), e.getSlot())) {
+        if (buttonPosContains(MailboxConfigUtil.getPreviousButton(), e.getSlot())) {
             setItems(iv, inventories.get(iv).getCurrentPage() - 1); // goto previous page
-        } else if (handler.buttonPosContains(MailboxConfigUtil.getNextButton(), e.getSlot())) {
+        } else if (buttonPosContains(MailboxConfigUtil.getNextButton(), e.getSlot())) {
             setItems(iv, inventories.get(iv).getCurrentPage() + 1); // goto next page
         } else {
             rewardClickEvent(e);
@@ -141,10 +146,10 @@ public class ZeroMailbox implements InventoryGUI {
         ArrayList<Mailbox> mailboxes = inventories.get(iv).getMailboxes();
 
         if (InventoryUtil.isInventoryFull((p))) {
-            handler.setItemError(e, "&c인벤토리 공간이 부족합니다.");
-        } else if (handler.buttonPosContains(MailboxConfigUtil.getAllRewardsButton(), e.getSlot())) { // get all rewards
+            setItemError(e, "&c인벤토리 공간이 부족합니다.");
+        } else if (buttonPosContains(MailboxConfigUtil.getAllRewardsButton(), e.getSlot())) { // get all rewards
             if (mailboxes.isEmpty()) {
-                handler.setItemError(e, "&c이미 모든 보상을 수령했습니다!");
+                setItemError(e, "&c이미 모든 보상을 수령했습니다!");
             } else {
                 if (inventories.get(iv).isShouldCancel()) {
                     return;
@@ -169,7 +174,7 @@ public class ZeroMailbox implements InventoryGUI {
                     setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
                 } catch (InvalidConfigurationException | SQLException ex) {
                     ex.printStackTrace(System.err);
-                    handler.setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
+                    setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
                 }
                 inventories.get(iv).setShouldCancel(false);
             });
@@ -191,7 +196,7 @@ public class ZeroMailbox implements InventoryGUI {
             try {
                 getReward(p, e.getInventory(), 0);
             } catch (InvalidConfigurationException | SQLException ex) {
-                handler.setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
+                setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
                 plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
                 return;
             }
@@ -199,9 +204,9 @@ public class ZeroMailbox implements InventoryGUI {
 
         setItems(e.getInventory(), 1); // goto first page
         if (inventoryFull) {
-            handler.setItemError(e, "&c인벤토리 공간이 부족합니다!", "&7여유 공간을 확보해주세요!");
+            setItemError(e, "&c인벤토리 공간이 부족합니다!", "&7여유 공간을 확보해주세요!");
         } else {
-            handler.setItemSuccess(e, "&a보상을 성공적으로 수령했습니다!");
+            setItemSuccess(e, "&a보상을 성공적으로 수령했습니다!");
         }
     }
 
@@ -218,6 +223,126 @@ public class ZeroMailbox implements InventoryGUI {
 
         p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
         inventories.get(iv).getMailboxes().remove(index);
+    }
+
+    private MailboxInventoryInfo createMailboxInventoryInfo(Player p) {
+        try {
+            MailboxInventoryInfo info = new MailboxInventoryInfo();
+            info.setMailboxes(MailboxDB.getMailboxes(p));
+            return info;
+        } catch (Exception e) {
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                p.closeInventory();
+                p.sendMessage("[우편함] 오류가 발생하여 우편함을 볼 수 없습니다!");
+                e.printStackTrace(System.err);
+            });
+        }
+        return null;
+    }
+
+    private void setMailboxItemToInventory(Inventory iv, Mailbox mailbox, int guiIndex) {
+        try {
+            ItemStack itemStack = ItemUtil.base64ToItemStack(mailbox.getItem());
+
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text(""));
+            lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                    TimeUtil.getRemainingTimeText(mailbox.getExpiryTime())
+            )); // add expire date
+
+            iv.setItem(guiIndex, ItemUtil.addLore(itemStack, lore)); // set mailbox item
+        } catch (InvalidConfigurationException e) {
+            plugin.getLogger().severe("Failed to convert base64 to ItemStack: " + e.getMessage());
+        }
+    }
+
+    private void setNavButton(Inventory iv, MailboxButton button, int page) {
+        List<Integer> positions = button.getPositions();
+        for (int pos : positions) {
+            ItemStack item = ItemUtil.newItemStack(
+                    button.getItem(), 1, button.getCustomModelData(),
+                    button.getName().replace("${page}", String.valueOf(page)),
+                    button.getLore(page)
+            );
+            iv.setItem(pos, item);
+        }
+    }
+
+    private boolean buttonPosContains(MailboxButton button, int pos) {
+        List<Integer> positions = button.getPositions();
+        for (int p : positions) {
+            if (p == pos)
+                return true;
+        }
+        return false;
+    }
+
+    private List<Integer> getButtonPos(int pos) {
+        MailboxButton getAllRewardsButton = MailboxConfigUtil.getAllRewardsButton();
+        MailboxButton previousButton = MailboxConfigUtil.getPreviousButton();
+        MailboxButton nextButton = MailboxConfigUtil.getNextButton();
+
+        if (buttonPosContains(getAllRewardsButton, pos))
+            return getAllRewardsButton.getPositions();
+        if (buttonPosContains(previousButton, pos))
+            return previousButton.getPositions();
+        if (buttonPosContains(nextButton, pos))
+            return nextButton.getPositions();
+
+        return Collections.singletonList(pos);
+    }
+
+    private void setItemError(InventoryClickEvent e, String name, String... lore) {
+        Material errMaterial = MailboxConfigUtil.getErrorMaterial();
+        String formattedName = TextFormatUtil.getFormattedText(name);
+        String[] formattedLore = TextFormatUtil.getFormattedTextList(lore);
+        int customModelData = MailboxConfigUtil.getErrorCustomModelData();
+        List<Integer> positions = getButtonPos(e.getSlot());
+
+        ItemStack errorItem = ItemUtil.newItemStack(errMaterial, 1, customModelData, formattedName, formattedLore);
+        InventoryUtil.setTempItem(e.getInventory(), errorItem, e.getCurrentItem(), positions.stream().mapToInt(Integer::intValue).toArray());
+    }
+
+    private void setItemSuccess(InventoryClickEvent e, String name, String... lore) {
+        Material material = MailboxConfigUtil.getSuccessMaterial();
+        String formattedName = TextFormatUtil.getFormattedText(name);
+        String[] formattedLore = TextFormatUtil.getFormattedTextList(lore);
+        int customModelData = MailboxConfigUtil.getSuccessCustomModelData();
+        List<Integer> positions = getButtonPos(e.getSlot());
+
+        ItemStack item = ItemUtil.newItemStack(material, 1, customModelData, formattedName, formattedLore);
+        InventoryUtil.setTempItem(e.getInventory(), item, e.getCurrentItem(), positions.stream().mapToInt(Integer::intValue).toArray());
+    }
+
+    private boolean containsTaskItem(InventoryClickEvent e) {
+        Inventory iv = e.getInventory();
+
+        Material err_material = MailboxConfigUtil.getErrorMaterial();
+        int err_customModelData = MailboxConfigUtil.getErrorCustomModelData();
+        Material suc_material = MailboxConfigUtil.getSuccessMaterial();
+        int suc_customModelData = MailboxConfigUtil.getSuccessCustomModelData();
+
+        return InventoryUtil.inventoryContains(iv, err_material, err_customModelData) ||
+                InventoryUtil.inventoryContains(iv, suc_material, suc_customModelData);
+    }
+
+    private void scheduleDailyCleanup() {
+        long delay = TimeUtil.calculateInitialDelay(0, 0, 0);
+        long period = 24 * 60 * 60 * 20; // 1일(24시간)을 틱으로 변환
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::cleanupExpiredMailboxes, delay, period);
+        plugin.getLogger().info("Scheduled daily cleanup for expired mailboxes.");
+    }
+
+    private void cleanupExpiredMailboxes() {
+        try {
+            MailboxDB.cleanupExpiredMailboxes();
+            plugin.getLogger().info("Expired mailboxes have been cleaned up.");
+        } catch (SQLException e) {
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                plugin.getLogger().severe("Failed to cleanup expired mailboxes: " + e.getMessage());
+                e.printStackTrace(System.err);
+            });
+        }
     }
 
     @Override

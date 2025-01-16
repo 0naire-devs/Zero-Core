@@ -52,6 +52,10 @@ public class MailboxDB {
         ZeroDB.executeUpdate("delete from mailbox where mail_id = ?", mailId);
     }
 
+    public static void cleanupExpiredMailboxes() throws SQLException {
+        ZeroDB.executeUpdate("delete from mailbox where expiry_time < now() at time zone 'Asia/Seoul'");
+    }
+
     public static int getRemainingMailCount(Player p) throws SQLException {
         int result;
         String uuid = p.getUniqueId().toString();
