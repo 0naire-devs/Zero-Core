@@ -310,7 +310,6 @@ public class ZeroMailbox implements InventoryGUI {
     private void cleanupExpiredMailboxes() {
         try {
             MailboxDB.cleanupExpiredMailboxes();
-            plugin.getLogger().info("Expired mailboxes have been cleaned up.");
         } catch (SQLException e) {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 plugin.getLogger().severe("Failed to cleanup expired mailboxes: " + e.getMessage());
