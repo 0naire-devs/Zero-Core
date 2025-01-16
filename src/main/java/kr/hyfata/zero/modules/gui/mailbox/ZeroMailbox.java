@@ -35,15 +35,12 @@ public class ZeroMailbox implements InventoryGUI {
         InventoryEventListener.registerInventory(this);
         Objects.requireNonNull(plugin.getCommand("우편함")).setExecutor(new MailboxCommand());
         Objects.requireNonNull(plugin.getCommand("우편함")).setTabCompleter(new MailboxCommand());
-        cleanupExpiredMailboxes();
-        scheduleDailyCleanup();
     }
 
     public void onDisable() {
         for (Inventory inv : inventories.keySet()) {
             inv.close();
         }
-        cleanupExpiredMailboxes();
     }
 
     @Override
@@ -52,7 +49,9 @@ public class ZeroMailbox implements InventoryGUI {
                 TextFormatUtil.getFormattedText(p, MailboxConfigUtil.getMailBoxTitle()));
 
         p.openInventory(iv);
+
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            cleanupExpiredMailboxes();
             MailboxInventoryInfo info = createMailboxInventoryInfo(p);
             if (info == null)
                 return;
@@ -208,7 +207,6 @@ public class ZeroMailbox implements InventoryGUI {
     }
 
     private MailboxInventoryInfo createMailboxInventoryInfo(Player p) {
-        cleanupExpiredMailboxes();
         try {
             MailboxInventoryInfo info = new MailboxInventoryInfo();
             info.setMailboxes(MailboxDB.getMailboxes(p));
@@ -307,13 +305,6 @@ public class ZeroMailbox implements InventoryGUI {
 
         return InventoryUtil.inventoryContains(iv, err_material, err_customModelData) ||
                 InventoryUtil.inventoryContains(iv, suc_material, suc_customModelData);
-    }
-
-    private void scheduleDailyCleanup() {
-        long delay = TimeUtil.calculateInitialDelay(0, 0, 0);
-        long period = 24 * 60 * 60 * 20; // 1일(24시간)을 틱으로 변환
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::cleanupExpiredMailboxes, delay, period);
-        plugin.getLogger().info("Scheduled daily cleanup for expired mailboxes.");
     }
 
     private void cleanupExpiredMailboxes() {
