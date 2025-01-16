@@ -81,15 +81,6 @@ public class ZeroMailbox implements InventoryGUI {
                 break;
             if (mailboxIndex < mailboxes.size()) {
                 Mailbox mailbox = mailboxes.get(mailboxIndex);
-                // remove expired items
-                if (TimeUtil.isExpired(mailbox.getExpiryTime())) {
-                    deleteMailboxFromDB(mailbox.getMailId());
-                    mailboxes.remove(mailboxIndex);
-
-                    mailboxIndex--;
-                    guiSlot--;
-                    continue;
-                }
                 setMailboxItemToInventory(iv, mailbox, guiSlot);
             } else {
                 break;
@@ -102,15 +93,6 @@ public class ZeroMailbox implements InventoryGUI {
             setNavButton(iv, MailboxConfigUtil.getPreviousButton(), page);
         if (mailboxes != null && currentPageEndIndex < mailboxes.size())
             setNavButton(iv, MailboxConfigUtil.getNextButton(), page);
-    }
-
-    private void deleteMailboxFromDB(int mailId) {
-        try {
-            MailboxDB.deleteMailbox(mailId);
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to delete expired mailbox from DB: " + e.getMessage());
-            e.printStackTrace(System.err);
-        }
     }
 
     @Override
@@ -226,6 +208,7 @@ public class ZeroMailbox implements InventoryGUI {
     }
 
     private MailboxInventoryInfo createMailboxInventoryInfo(Player p) {
+        cleanupExpiredMailboxes();
         try {
             MailboxInventoryInfo info = new MailboxInventoryInfo();
             info.setMailboxes(MailboxDB.getMailboxes(p));
