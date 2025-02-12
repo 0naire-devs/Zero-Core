@@ -1,7 +1,6 @@
 package kr.hyfata.zero.util;
 
 import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.vault.VaultUtil;
 import org.bukkit.entity.Player;
 
 import java.text.DecimalFormat;

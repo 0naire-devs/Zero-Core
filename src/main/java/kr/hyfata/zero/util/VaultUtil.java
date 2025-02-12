@@ -1,5 +1,6 @@
-package kr.hyfata.zero.vault;
+package kr.hyfata.zero.util;
 
+import kr.hyfata.zero.vault.VaultHook;
 import org.bukkit.OfflinePlayer;
 
 public class VaultUtil {
