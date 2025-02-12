@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.mailbox.util;
+package kr.hyfata.zero.util.config;
 
 import kr.hyfata.zero.ZeroCore;
 import kr.hyfata.zero.config.IConfig;

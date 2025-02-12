@@ -1,4 +1,4 @@
-package kr.hyfata.zero.util;
+package kr.hyfata.zero.util.config;
 
 import kr.hyfata.zero.config.IConfig;
 import org.bukkit.configuration.file.YamlConfiguration;

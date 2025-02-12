@@ -1,7 +1,7 @@
 package kr.hyfata.zero;
 
 import kr.hyfata.zero.gui.InventoryEventListener;
-import kr.hyfata.zero.util.ConfigUtil;
+import kr.hyfata.zero.util.config.ConfigUtil;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ZeroCore extends JavaPlugin {

@@ -1,6 +1,6 @@
 package kr.hyfata.zero.config;
 
-import kr.hyfata.zero.util.ConfigUtil;
+import kr.hyfata.zero.util.config.ConfigUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 

@@ -1,7 +1,7 @@
-package kr.hyfata.zero.modules.mailbox.handler;
+package kr.hyfata.zero.modules.mailbox.listener;
 
 import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.modules.mailbox.util.MailboxUtil;
+import kr.hyfata.zero.modules.mailbox.handler.MailboxHandler;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import org.bukkit.OfflinePlayer;
@@ -37,7 +37,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                     } else {
                         CompletableFuture.runAsync(() -> {
                             try {
-                                MailboxUtil.sendMailToPlayer(p, target, args[2], args[3]);
+                                MailboxHandler.sendMailToPlayer(p, target, args[2], args[3]);
                             } catch (ParseException e) {
                                 sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
                             }
@@ -48,7 +48,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                 case "전체발송": {
                     CompletableFuture.runAsync(() -> {
                         try {
-                            MailboxUtil.sendMailToAll(p, args[1], args[2]);
+                            MailboxHandler.sendMailToAll(p, args[1], args[2]);
                         } catch (ParseException e) {
                             sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
                         }

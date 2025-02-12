@@ -1,7 +1,6 @@
-package kr.hyfata.zero.modules.mailbox.util;
+package kr.hyfata.zero.modules.mailbox.handler;
 
 import kr.hyfata.zero.modules.mailbox.dto.Mailbox;
-import kr.hyfata.zero.modules.mailbox.handler.MailboxDB;
 import kr.hyfata.zero.util.ItemUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
@@ -16,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import java.sql.SQLException;
 import java.text.ParseException;
 
-public class MailboxUtil {
+public class MailboxHandler {
     public static void sendMailToPlayer(Player sender, OfflinePlayer target, String expireDate, String expireTime) throws ParseException {
         sendMailTo(sender, target.getUniqueId().toString(), expireDate, expireTime);
     }
