@@ -38,6 +38,7 @@ public class ZeroMailbox implements InventoryGUI {
         this.plugin = plugin;
         InventoryEventListener.registerInventory(this);
         setListeners();
+        plugin.getLogger().info("Zero Mailbox has been enabled.");
     }
 
     private void setListeners() {

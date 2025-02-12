@@ -6,5 +6,6 @@ public class ZeroJangsa {
     JavaPlugin plugin;
     public ZeroJangsa(JavaPlugin plugin) {
         this.plugin = plugin;
+        plugin.getLogger().info("Zero Jangsa has been enabled.");
     }
 }
