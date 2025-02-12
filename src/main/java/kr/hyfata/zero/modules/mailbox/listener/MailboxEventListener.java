@@ -1,7 +1,6 @@
 package kr.hyfata.zero.modules.mailbox.listener;
 
 import kr.hyfata.zero.modules.mailbox.ZeroMailbox;
-import kr.hyfata.zero.modules.mailbox.handler.MailboxHandler;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -16,6 +15,6 @@ public class MailboxEventListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        CompletableFuture.runAsync(() -> MailboxHandler.sendRemainingMailCount(event.getPlayer()));
+        CompletableFuture.runAsync(() -> zeroMailbox.getHandler().sendRemainingMailCount(event.getPlayer()));
     }
 }

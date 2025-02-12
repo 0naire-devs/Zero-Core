@@ -8,5 +8,6 @@ public interface InventoryGUI {
     void openInventory(Player p);
     void inventoryClickEvent(InventoryClickEvent e);
     void inventoryCloseEvent(InventoryCloseEvent e);
+    void closeInventoryAllPlayers();
     boolean contains(org.bukkit.inventory.Inventory inventory);
 }

@@ -16,15 +16,17 @@ import java.sql.SQLException;
 import java.text.ParseException;
 
 public class MailboxHandler {
-    public static void sendMailToPlayer(Player sender, OfflinePlayer target, String expireDate, String expireTime) throws ParseException {
+    MailboxDB db = new MailboxDB();
+
+    public void sendMailToPlayer(Player sender, OfflinePlayer target, String expireDate, String expireTime) throws ParseException {
         sendMailTo(sender, target.getUniqueId().toString(), expireDate, expireTime);
     }
 
-    public static void sendMailToAll(Player sender, String expireDate, String expireTime) throws ParseException {
+    public void sendMailToAll(Player sender, String expireDate, String expireTime) throws ParseException {
         sendMailTo(sender, "all", expireDate, expireTime);
     }
 
-    private static void sendMailTo(Player sender, String targetUUID, String expireDate, String expireTime) throws ParseException {
+    private void sendMailTo(Player sender, String targetUUID, String expireDate, String expireTime) throws ParseException {
         ItemStack itemStack = sender.getInventory().getItemInMainHand();
         if (itemStack.getType().isAir()) {
             sender.sendMessage(TextFormatUtil.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"));
@@ -37,7 +39,7 @@ public class MailboxHandler {
         mailbox.setItem(convertedItem);
         mailbox.setExpiryTime(TimeUtil.stringToTimestamp(expireDate + " " + expireTime));
         try {
-            MailboxDB.putMailbox(mailbox);
+            db.putMailbox(mailbox);
             for (Player p : Bukkit.getOnlinePlayers()) {
                 sendRemainingMailCount(p);
             }
@@ -48,10 +50,10 @@ public class MailboxHandler {
         }
     }
     
-    public static void sendRemainingMailCount(Player p) {
+    public void sendRemainingMailCount(Player p) {
         int remainingMailCount = 0;
         try {
-            remainingMailCount = MailboxDB.getRemainingMailCount(p);
+            remainingMailCount = db.getRemainingMailCount(p);
         } catch (SQLException ignored) {}
 
         if (remainingMailCount > 0) {

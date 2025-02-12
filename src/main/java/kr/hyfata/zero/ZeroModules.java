@@ -20,16 +20,4 @@ public class ZeroModules {
         zeroScoreBoard.onDisable();
         zeroMailbox.onDisable();
     }
-
-    public ZeroScoreBoard getZeroScoreBoard() {
-        return zeroScoreBoard;
-    }
-
-    public ZeroMailbox getZeroMailboxUI() {
-        return zeroMailbox;
-    }
-
-    public ZeroJangsa getZeroJangsa() {
-        return zeroJangsa;
-    }
 }

@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class MailboxDB {
-    public static ArrayList<Mailbox> getMailboxes(Player p) throws SQLException {
+    public ArrayList<Mailbox> getMailboxes(Player p) throws SQLException {
         ArrayList<Mailbox> result = new ArrayList<>();
         String uuid = p.getUniqueId().toString();
         String query = "SELECT m.* " +
@@ -39,25 +39,25 @@ public class MailboxDB {
         return result;
     }
 
-    public static void putMailbox(Mailbox mailbox) throws SQLException {
+    public void putMailbox(Mailbox mailbox) throws SQLException {
         ZeroDB.executeUpdate("insert into mailbox (uuid, item, expiry_time) values (?, ?, ?)",
                 mailbox.getUuid(), mailbox.getItem(), mailbox.getExpiryTime());
     }
 
-    public static void readMailbox(Player p, int mailId) throws SQLException {
+    public void readMailbox(Player p, int mailId) throws SQLException {
         String uuid = p.getUniqueId().toString();
         ZeroDB.executeUpdate("insert into read_mail values(?, ?)", uuid, mailId);
     }
 
-    public static void deleteMailbox(int mailId) throws SQLException {
+    public void deleteMailbox(int mailId) throws SQLException {
         ZeroDB.executeUpdate("delete from mailbox where mail_id = ?", mailId);
     }
 
-    public static void cleanupExpiredMailboxes() throws SQLException {
+    public void cleanupExpiredMailboxes() throws SQLException {
         ZeroDB.executeUpdate("delete from mailbox where expiry_time < now() at time zone 'Asia/Seoul'");
     }
 
-    public static int getRemainingMailCount(Player p) throws SQLException {
+    public int getRemainingMailCount(Player p) throws SQLException {
         int result;
         String uuid = p.getUniqueId().toString();
         String query = "SELECT COUNT(m.*) as count " +

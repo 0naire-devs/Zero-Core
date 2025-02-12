@@ -30,8 +30,9 @@ public class ZeroScoreBoard {
     }
 
     private void setListeners() {
-        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setExecutor(new ScoreboardCommand());
-        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setTabCompleter(new ScoreboardCommand());
+        ScoreboardCommand command = new ScoreboardCommand(this);
+        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setExecutor(command);
+        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setTabCompleter(command);
         getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
     }
 

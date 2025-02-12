@@ -12,6 +12,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class ScoreboardCommand implements CommandExecutor, TabExecutor {
+    ZeroScoreBoard zeroScoreBoard;
+    public ScoreboardCommand(ZeroScoreBoard zeroScoreBoard) {
+        this.zeroScoreBoard = zeroScoreBoard;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         Player p = (Player) commandSender;
@@ -19,17 +24,17 @@ public class ScoreboardCommand implements CommandExecutor, TabExecutor {
             switch(args[0]) {
                 case "reload":
                     ZeroCore.configModules.getScoreboardConfig().reloadConfig();
-                    ZeroCore.modules.getZeroScoreBoard().removeScoreboardAllPlayers();
-                    ZeroCore.modules.getZeroScoreBoard().createScoreboardAllPlayers();
+                    zeroScoreBoard.removeScoreboardAllPlayers();
+                    zeroScoreBoard.createScoreboardAllPlayers();
                     p.sendMessage("Reloaded config");
                     break;
                 case "on":
-                    ZeroCore.modules.getZeroScoreBoard().removeScoreboard(p);
-                    ZeroCore.modules.getZeroScoreBoard().createScoreboard(p);
+                    zeroScoreBoard.removeScoreboard(p);
+                    zeroScoreBoard.createScoreboard(p);
                     p.sendMessage("§a스코어보드가 켜졌습니다!");
                     break;
                 case "off":
-                    ZeroCore.modules.getZeroScoreBoard().removeScoreboard(p);
+                    zeroScoreBoard.removeScoreboard(p);
                     p.sendMessage("§c스코어보드가 꺼졌습니다!");
                     break;
                 default:

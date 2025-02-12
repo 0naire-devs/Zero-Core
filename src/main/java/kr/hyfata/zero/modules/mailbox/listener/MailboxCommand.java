@@ -1,7 +1,7 @@
 package kr.hyfata.zero.modules.mailbox.listener;
 
 import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.modules.mailbox.handler.MailboxHandler;
+import kr.hyfata.zero.modules.mailbox.ZeroMailbox;
 import kr.hyfata.zero.util.TextFormatUtil;
 import kr.hyfata.zero.util.TimeUtil;
 import org.bukkit.OfflinePlayer;
@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MailboxCommand implements CommandExecutor, TabExecutor {
+    ZeroMailbox mailbox;
+    public MailboxCommand(ZeroMailbox mailbox) {
+        this.mailbox = mailbox;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = (Player) sender;
@@ -37,7 +42,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                     } else {
                         CompletableFuture.runAsync(() -> {
                             try {
-                                MailboxHandler.sendMailToPlayer(p, target, args[2], args[3]);
+                                mailbox.getHandler().sendMailToPlayer(p, target, args[2], args[3]);
                             } catch (ParseException e) {
                                 sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
                             }
@@ -48,7 +53,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                 case "전체발송": {
                     CompletableFuture.runAsync(() -> {
                         try {
-                            MailboxHandler.sendMailToAll(p, args[1], args[2]);
+                            mailbox.getHandler().sendMailToAll(p, args[1], args[2]);
                         } catch (ParseException e) {
                             sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
                         }
@@ -59,7 +64,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
                     p.sendMessage("잘못된 명령어 입력!");
             }
         } else {
-            ZeroCore.modules.getZeroMailboxUI().openInventory(p);
+            mailbox.getInventoryHandler().openInventory(p);
         }
         return true;
     }
