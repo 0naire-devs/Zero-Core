@@ -47,6 +47,6 @@ public class TextFormatUtil {
     }
 
     public static String getFormattedWorld(String world) {
-        return ZeroCore.configModules.getScoreboardConfig().getString("worlds." + world, world);
+        return ZeroCore.getZeroConfig().getScoreboardConfig().getString("worlds." + world, world);
     }
 }

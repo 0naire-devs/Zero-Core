@@ -31,7 +31,7 @@ public class MailboxCommand implements CommandExecutor, TabExecutor {
         if (sender.hasPermission("zeromailbox.advenced") && args.length != 0) {
             switch(args[0]) {
                 case "reload": {
-                    ZeroCore.configModules.getMailboxConfig().reloadConfig();
+                    ZeroCore.getZeroConfig().getMailboxConfig().reloadConfig();
                     p.sendMessage("Reloaded config");
                     break;
                 }

@@ -5,8 +5,8 @@ import kr.hyfata.zero.util.config.ConfigUtil;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ZeroCore extends JavaPlugin {
-    public static ZeroConfig configModules;
-    public static ZeroModules modules;
+    private static ZeroConfig configModules;
+    private ZeroModules modules;
 
     @Override
     public void onEnable() {
@@ -24,5 +24,9 @@ public final class ZeroCore extends JavaPlugin {
     private void initModules() {
         configModules = new ZeroConfig(this);
         modules = new ZeroModules(this);
+    }
+
+    public static ZeroConfig getZeroConfig() {
+        return configModules;
     }
 }

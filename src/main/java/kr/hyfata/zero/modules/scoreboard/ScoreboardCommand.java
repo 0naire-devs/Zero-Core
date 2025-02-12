@@ -23,7 +23,7 @@ public class ScoreboardCommand implements CommandExecutor, TabExecutor {
         if (args.length != 0) {
             switch(args[0]) {
                 case "reload":
-                    ZeroCore.configModules.getScoreboardConfig().reloadConfig();
+                    ZeroCore.getZeroConfig().getScoreboardConfig().reloadConfig();
                     zeroScoreBoard.removeScoreboardAllPlayers();
                     zeroScoreBoard.createScoreboardAllPlayers();
                     p.sendMessage("Reloaded config");

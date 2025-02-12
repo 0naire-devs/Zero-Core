@@ -8,7 +8,7 @@ import org.bukkit.Material;
 
 public class MailboxConfigUtil {
     public static IConfig getConfig() {
-        return ZeroCore.configModules.getMailboxConfig();
+        return ZeroCore.getZeroConfig().getMailboxConfig();
     }
 
     public static String getMailBoxTitle() {

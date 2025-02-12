@@ -15,7 +15,7 @@ public class ScoreboardListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!ZeroCore.configModules.getScoreboardConfig().getBoolean("scoreboard.enabled", true)) {
+        if (!ZeroCore.getZeroConfig().getScoreboardConfig().getBoolean("scoreboard.enabled", true)) {
             return;
         }
         Player player = event.getPlayer();

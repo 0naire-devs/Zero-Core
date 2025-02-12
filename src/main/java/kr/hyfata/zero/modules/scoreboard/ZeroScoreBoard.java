@@ -50,7 +50,7 @@ public class ZeroScoreBoard {
     public void createScoreboard(Player player) {
         FastBoard board = new FastBoard(player);
         board.updateTitle(TextFormatUtil.getFormattedText(player,
-                ZeroCore.configModules.getScoreboardConfig().getString("scoreboard.title", "&cERROR")));
+                ZeroCore.getZeroConfig().getScoreboardConfig().getString("scoreboard.title", "&cERROR")));
 
         this.boards.put(player.getUniqueId(), board);
     }
@@ -71,7 +71,7 @@ public class ZeroScoreBoard {
 
     private void updateBoard(FastBoard board) {
         board.updateLines(TextFormatUtil.getFormattedText(board.getPlayer(),
-                ZeroCore.configModules.getScoreboardConfig().getString("scoreboard.message", "&cERROR"))
+                ZeroCore.getZeroConfig().getScoreboardConfig().getString("scoreboard.message", "&cERROR"))
                         .replace("\\\n", "")
                 .split("\n"));
     }
