@@ -1,10 +1,12 @@
-package kr.hyfata.zero.modules.gui.mailbox;
+package kr.hyfata.zero.modules.mailbox;
 
-import kr.hyfata.zero.modules.gui.InventoryEventListener;
-import kr.hyfata.zero.modules.gui.InventoryGUI;
-import kr.hyfata.zero.modules.mailbox.Mailbox;
-import kr.hyfata.zero.modules.mailbox.MailboxCommand;
-import kr.hyfata.zero.modules.mailbox.MailboxDB;
+import kr.hyfata.zero.gui.InventoryEventListener;
+import kr.hyfata.zero.gui.InventoryGUI;
+import kr.hyfata.zero.modules.mailbox.dto.Mailbox;
+import kr.hyfata.zero.modules.mailbox.dto.MailboxButton;
+import kr.hyfata.zero.modules.mailbox.dto.MailboxInventoryInfo;
+import kr.hyfata.zero.modules.mailbox.handler.MailboxCommand;
+import kr.hyfata.zero.modules.mailbox.handler.MailboxDB;
 import kr.hyfata.zero.util.InventoryUtil;
 import kr.hyfata.zero.util.ItemUtil;
 import kr.hyfata.zero.util.TextFormatUtil;
@@ -26,6 +28,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+import static org.bukkit.Bukkit.getServer;
+
 public class ZeroMailbox implements InventoryGUI {
     private final HashMap<Inventory, MailboxInventoryInfo> inventories = new HashMap<>();
     JavaPlugin plugin;
@@ -33,8 +37,13 @@ public class ZeroMailbox implements InventoryGUI {
     public ZeroMailbox(JavaPlugin plugin) {
         this.plugin = plugin;
         InventoryEventListener.registerInventory(this);
+        setListeners();
+    }
+
+    private void setListeners() {
         Objects.requireNonNull(plugin.getCommand("우편함")).setExecutor(new MailboxCommand());
         Objects.requireNonNull(plugin.getCommand("우편함")).setTabCompleter(new MailboxCommand());
+        getServer().getPluginManager().registerEvents(new MailboxEventListener(this), plugin);
     }
 
     public void onDisable() {

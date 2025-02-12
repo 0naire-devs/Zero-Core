@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.gui.mailbox;
+package kr.hyfata.zero.modules.mailbox.dto;
 
 import org.bukkit.Material;
 

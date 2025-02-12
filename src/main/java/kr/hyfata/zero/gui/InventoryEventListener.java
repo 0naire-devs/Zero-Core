@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.gui;
+package kr.hyfata.zero.gui;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

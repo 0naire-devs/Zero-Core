@@ -1,6 +1,4 @@
-package kr.hyfata.zero.modules.gui.mailbox;
-
-import kr.hyfata.zero.modules.mailbox.Mailbox;
+package kr.hyfata.zero.modules.mailbox.dto;
 
 import java.util.ArrayList;
 

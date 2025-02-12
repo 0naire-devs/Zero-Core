@@ -2,7 +2,7 @@ package kr.hyfata.zero.modules.mailbox.util;
 
 import kr.hyfata.zero.ZeroCore;
 import kr.hyfata.zero.config.IConfig;
-import kr.hyfata.zero.modules.gui.mailbox.MailboxButton;
+import kr.hyfata.zero.modules.mailbox.dto.MailboxButton;
 import kr.hyfata.zero.util.TextFormatUtil;
 import org.bukkit.Material;
 

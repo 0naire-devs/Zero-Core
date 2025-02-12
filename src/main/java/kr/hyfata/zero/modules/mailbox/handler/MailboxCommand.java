@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.mailbox;
+package kr.hyfata.zero.modules.mailbox.handler;
 
 import kr.hyfata.zero.ZeroCore;
 import kr.hyfata.zero.modules.mailbox.util.MailboxUtil;

@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.mailbox;
+package kr.hyfata.zero.modules.mailbox.dto;
 
 import java.sql.Timestamp;
 

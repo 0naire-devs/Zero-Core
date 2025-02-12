@@ -1,4 +1,4 @@
-package kr.hyfata.zero.modules.gui;
+package kr.hyfata.zero.gui;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

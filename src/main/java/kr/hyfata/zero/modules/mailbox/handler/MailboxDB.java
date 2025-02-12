@@ -1,5 +1,6 @@
-package kr.hyfata.zero.modules.mailbox;
+package kr.hyfata.zero.modules.mailbox.handler;
 
+import kr.hyfata.zero.modules.mailbox.dto.Mailbox;
 import kr.hyfata.zero.zeroDBCore.ZeroDB;
 import org.bukkit.entity.Player;
 
