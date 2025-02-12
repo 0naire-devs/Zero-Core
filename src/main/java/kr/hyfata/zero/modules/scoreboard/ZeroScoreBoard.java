@@ -3,6 +3,7 @@ package kr.hyfata.zero.modules.scoreboard;
 import fr.mrmicky.fastboard.FastBoard;
 import kr.hyfata.zero.ZeroCore;
 import kr.hyfata.zero.util.TextFormatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -10,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
-import static org.bukkit.Bukkit.getServer;
 
 public class ZeroScoreBoard {
     private final Map<UUID, FastBoard> boards = new HashMap<>();
@@ -21,7 +20,7 @@ public class ZeroScoreBoard {
         this.plugin = plugin;
         setListeners();
         createScoreboardAllPlayers();
-        getServer().getScheduler().runTaskTimer(plugin, () -> {
+        Bukkit.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (FastBoard board : this.boards.values()) {
                 updateBoard(board);
             }
@@ -33,7 +32,7 @@ public class ZeroScoreBoard {
         ScoreboardCommand command = new ScoreboardCommand(this);
         Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setExecutor(command);
         Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setTabCompleter(command);
-        getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
+        Bukkit.getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
     }
 
     public void onDisable() {
@@ -42,7 +41,7 @@ public class ZeroScoreBoard {
     }
 
     public void createScoreboardAllPlayers() {
-        for (Player player : getServer().getOnlinePlayers()) {
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             createScoreboard(player);
         }
     }
@@ -56,7 +55,7 @@ public class ZeroScoreBoard {
     }
 
     public void removeScoreboardAllPlayers() {
-        for (Player player : getServer().getOnlinePlayers()) {
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             removeScoreboard(player);
         }
     }

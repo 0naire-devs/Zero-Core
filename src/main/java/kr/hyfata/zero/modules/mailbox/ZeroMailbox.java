@@ -4,11 +4,10 @@ import kr.hyfata.zero.modules.mailbox.handler.MailboxHandler;
 import kr.hyfata.zero.modules.mailbox.handler.MailboxInventoryHandler;
 import kr.hyfata.zero.modules.mailbox.listener.MailboxCommand;
 import kr.hyfata.zero.modules.mailbox.listener.MailboxEventListener;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
-
-import static org.bukkit.Bukkit.getServer;
 
 public class ZeroMailbox {
     JavaPlugin plugin;
@@ -26,7 +25,7 @@ public class ZeroMailbox {
         MailboxCommand command = new MailboxCommand(this);
         Objects.requireNonNull(plugin.getCommand("우편함")).setExecutor(command);
         Objects.requireNonNull(plugin.getCommand("우편함")).setTabCompleter(command);
-        getServer().getPluginManager().registerEvents(new MailboxEventListener(this), plugin);
+        Bukkit.getServer().getPluginManager().registerEvents(new MailboxEventListener(this), plugin);
     }
 
     public void onDisable() {
