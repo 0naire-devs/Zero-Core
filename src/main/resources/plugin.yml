@@ -10,3 +10,4 @@ commands:
   zeroscoreboard:
     permission: "zero.scoreboard"
   우편함:
+  장사:
