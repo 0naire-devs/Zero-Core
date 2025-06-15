@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.UUID;
 
 public class MailboxHandler {
     MailboxDB db = new MailboxDB();
@@ -40,8 +41,18 @@ public class MailboxHandler {
         mailbox.setExpiryTime(TimeUtil.stringToTimestamp(expireDate + " " + expireTime));
         try {
             db.putMailbox(mailbox);
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                sendRemainingMailCount(p);
+            if (targetUUID.equals("all")) {
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    sendRemainingMailCount(p);
+                }
+            } else {
+                OfflinePlayer target = Bukkit.getOfflinePlayer(UUID.fromString(targetUUID));
+                if (target.isOnline()) {
+                    Player p = target.getPlayer();
+                    if (p != null) {
+                        sendRemainingMailCount(p);
+                    }
+                }
             }
             sender.sendMessage(TextFormatUtil.getFormattedText("&a우편을 성공적으로 보냈습니다!"));
         } catch (SQLException e) {

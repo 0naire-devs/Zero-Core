@@ -62,11 +62,12 @@ public class MailboxDB {
         String uuid = p.getUniqueId().toString();
         String query = "SELECT COUNT(m.*) as count " +
                 "FROM mailbox m " +
-                "WHERE m.uuid = ? OR (m.uuid = 'all' AND NOT EXISTS (" +
+                "WHERE (m.expiry_time > now() at time zone 'Asia/Seoul') " +
+                "AND (m.uuid = ? OR (m.uuid = 'all' AND NOT EXISTS (" +
                 "SELECT 1 " +
                 "FROM read_mail r " +
                 "WHERE r.uuid = ? AND r.mail_id = m.mail_id" +
-                "))";
+                ")))";
         try (ResultSet rs = ZeroDB.executeQuery(query, uuid, uuid);
              Statement stmt = rs.getStatement();
              Connection ignored = stmt.getConnection()) {
