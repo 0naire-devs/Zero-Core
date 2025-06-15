@@ -1,14 +1,13 @@
-package kr.hyfata.zero.config;
+package kr.hyfata.zero.config
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.plugin.java.JavaPlugin
 
-public interface IConfig {
-    void init(JavaPlugin plugin);
-    FileConfiguration getConfig();
-    String getString(String key, String def);
-    boolean getBoolean(String key, Boolean def);
-    void setConfig(FileConfiguration config);
-    void saveConfig();
-    void reloadConfig();
+interface IConfig {
+    fun init(plugin: JavaPlugin)
+    var config: FileConfiguration
+    fun getString(key: String, def: String?): String?
+    fun getBoolean(key: String, def: Boolean): Boolean
+    fun saveConfig()
+    fun reloadConfig()
 }

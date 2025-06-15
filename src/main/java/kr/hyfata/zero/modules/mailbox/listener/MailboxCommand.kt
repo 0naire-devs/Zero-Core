@@ -1,124 +1,113 @@
-package kr.hyfata.zero.modules.mailbox.listener;
+package kr.hyfata.zero.modules.mailbox.listener
 
-import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.modules.mailbox.ZeroMailbox;
-import kr.hyfata.zero.util.TextFormatUtil;
-import kr.hyfata.zero.util.TimeUtil;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import kr.hyfata.zero.ZeroCore
+import kr.hyfata.zero.modules.mailbox.ZeroMailbox
+import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.util.TimeUtil
+import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabExecutor
+import org.bukkit.entity.Player
+import java.text.ParseException
+import java.util.*
+import java.util.concurrent.CompletableFuture
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-public class MailboxCommand implements CommandExecutor, TabExecutor {
-    ZeroMailbox mailbox;
-    public MailboxCommand(ZeroMailbox mailbox) {
-        this.mailbox = mailbox;
-    }
-
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        Player p = (Player) sender;
-        if (sender.hasPermission("zeromailbox.advenced") && args.length != 0) {
-            switch(args[0]) {
-                case "reload": {
-                    ZeroCore.getZeroConfig().getMailboxConfig().reloadConfig();
-                    p.sendMessage("Reloaded config");
-                    break;
+class MailboxCommand(var mailbox: ZeroMailbox) : CommandExecutor, TabExecutor {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
+        val p = sender as Player
+        if (sender.hasPermission("zeromailbox.advenced") && args.isNotEmpty()) {
+            when (args[0]) {
+                "reload" -> {
+                    ZeroCore.Companion.zeroConfig.mailboxConfig.reloadConfig()
+                    p.sendMessage("Reloaded config")
                 }
-                case "발송": {
-                    OfflinePlayer target = p.getServer().getOfflinePlayer(args[1]);
+
+                "발송" -> {
+                    val target = p.server.getOfflinePlayer(args[1])
                     if (!target.hasPlayedBefore()) {
-                        sender.sendMessage(TextFormatUtil.getFormattedText("&c플레이어를 찾을 수 없습니다!"));
+                        sender.sendMessage(TextFormatUtil.getFormattedText("&c플레이어를 찾을 수 없습니다!"))
                     } else {
-                        CompletableFuture.runAsync(() -> {
+                        CompletableFuture.runAsync {
                             try {
-                                mailbox.getHandler().sendMailToPlayer(p, target, args[2], args[3]);
-                            } catch (ParseException e) {
-                                sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
+                                mailbox.handler.sendMailToPlayer(p, target, args[2], args[3])
+                            } catch (_: ParseException) {
+                                sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"))
                             }
-                        });
-                    }
-                    break;
-                }
-                case "전체발송": {
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            mailbox.getHandler().sendMailToAll(p, args[1], args[2]);
-                        } catch (ParseException e) {
-                            sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"));
                         }
-                    });
-                    break;
+                    }
                 }
-                default:
-                    p.sendMessage("잘못된 명령어 입력!");
+
+                "전체발송" -> {
+                    CompletableFuture.runAsync {
+                        try {
+                            mailbox.handler.sendMailToAll(p, args[1], args[2])
+                        } catch (_: ParseException) {
+                            sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"))
+                        }
+                    }
+                }
+
+                else -> p.sendMessage("잘못된 명령어 입력!")
             }
         } else {
-            mailbox.getInventoryHandler().openInventory(p);
+            mailbox.inventoryHandler.openInventory(p)
         }
-        return true;
+        return true
     }
 
 
-
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    override fun onTabComplete(
+        sender: CommandSender,
+        command: Command,
+        label: String,
+        args: Array<String>
+    ): MutableList<String?>? {
         if (!sender.hasPermission("zeromailbox.advenced")) {
-            return null;
+            return null
         }
-        List<String> list = null;
-        String currentDateTime = TimeUtil.getCurrentDateTimeString();
-        String currentDate = currentDateTime.split(" ")[0];
-        String currentTime = currentDateTime.split(" ")[1];
+        var list: MutableList<String>? = null
+        val currentDateTime = TimeUtil.currentDateTimeString
+        val currentDate: String = currentDateTime.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+        val currentTime: String = currentDateTime.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
 
-        switch (args.length) {
-            case 1: {
-                list = Arrays.asList("전체발송", "발송", "reload");
-                break;
+        when (args.size) {
+            1 -> {
+                list = mutableListOf("전체발송", "발송", "reload")
             }
-            case 2: {
-                if (args[0].equals("전체발송")) {
-                    list = Arrays.asList("만료_날짜입력:", currentDate);
+
+            2 -> {
+                if (args[0] == "전체발송") {
+                    list = mutableListOf("만료_날짜입력:", currentDate)
                 }
-                break;
             }
-            case 3: {
-                if (args[0].equals("전체발송")) {
-                    list = Arrays.asList("만료_시간입력(24시간제):", currentTime);
-                } else if (args[0].equals("발송")) {
-                    list = Arrays.asList("만료_날짜입력:", currentDate);
+
+            3 -> {
+                if (args[0] == "전체발송") {
+                    list = mutableListOf("만료_시간입력(24시간제):", currentTime)
+                } else if (args[0] == "발송") {
+                    list = mutableListOf("만료_날짜입력:", currentDate)
                 }
-                break;
             }
-            case 4: {
-                if (args[0].equals("발송")) {
-                    list = Arrays.asList("만료_시간입력(24시간제):", currentTime);
+
+            4 -> {
+                if (args[0] == "발송") {
+                    list = mutableListOf("만료_시간입력(24시간제):", currentTime)
                 }
             }
         }
-        if (list == null)
-            return null;
-        String input = args[args.length - 1].toLowerCase();
+        if (list == null) return null
+        val input = args[args.size - 1].lowercase(Locale.getDefault())
 
-        List<String> completions = null;
-        for (String s : list) {
+        var completions: MutableList<String?>? = null
+        for (s in list) {
             if (s.startsWith(input)) {
                 if (completions == null) {
-                    completions = new ArrayList<>();
+                    completions = ArrayList<String?>()
                 }
-                completions.add(s);
+                completions.add(s)
             }
         }
-        return completions;
+        return completions
     }
 }

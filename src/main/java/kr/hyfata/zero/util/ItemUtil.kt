@@ -1,81 +1,91 @@
-package kr.hyfata.zero.util;
+package kr.hyfata.zero.util
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Material;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.Nullable;
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Material
+import org.bukkit.configuration.InvalidConfigurationException
+import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemStack
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-
-public class ItemUtil {
-    public static byte[] itemStackToBase64(ItemStack item) throws IllegalStateException {
-        YamlConfiguration yaml = new YamlConfiguration();
-        yaml.set("i", item);
-        String yamlStr = yaml.saveToString();
-        return Base64.getEncoder().encode(yamlStr.getBytes());
+object ItemUtil {
+    @Throws(IllegalStateException::class)
+    fun itemStackToBase64(item: ItemStack?): ByteArray? {
+        val yaml = YamlConfiguration()
+        yaml.set("i", item)
+        val yamlStr = yaml.saveToString()
+        return Base64.getEncoder().encode(yamlStr.toByteArray())
     }
 
-    public static ItemStack base64ToItemStack(byte[] base64) throws InvalidConfigurationException {
-        String decoded = new String(Base64.getDecoder().decode(base64));
-        YamlConfiguration yaml = new YamlConfiguration();
-        yaml.loadFromString(decoded);
-        return yaml.getItemStack("i");
+    @Throws(InvalidConfigurationException::class)
+    fun base64ToItemStack(base64: ByteArray?): ItemStack? {
+        val decoded = String(Base64.getDecoder().decode(base64))
+        val yaml = YamlConfiguration()
+        yaml.loadFromString(decoded)
+        return yaml.getItemStack("i")
     }
 
-    public static ItemStack addLore(ItemStack item, List<Component> loreToAdd) {
-        ItemMeta meta = item.getItemMeta();
-        @Nullable List<Component> lore = meta.lore();
+    fun addLore(item: ItemStack, loreToAdd: MutableList<Component?>): ItemStack {
+        val meta = item.itemMeta
+        var lore = meta.lore()
 
         if (lore == null) {
-            lore = new ArrayList<>();
+            lore = ArrayList()
         }
 
-        lore.addAll(loreToAdd);
-        meta.lore(lore);
-        item.setItemMeta(meta);
-        return item;
+        lore.addAll(loreToAdd)
+        meta.lore(lore)
+        item.setItemMeta(meta)
+        return item
     }
 
-    private static ItemStack newItemStack(Material material, int amount, int customModelData, Component name, Component... lore) {
+    private fun newItemStack(
+        material: Material?,
+        amount: Int,
+        customModelData: Int,
+        name: Component?,
+        vararg lore: Component?
+    ): ItemStack? {
         if (material == null) {
-            System.err.println(("Material cannot be null"));
-            return null;
+            System.err.println(("Material cannot be null"))
+            return null
         }
-        ItemStack item = new ItemStack(material, amount, (short) 0);
-        ItemMeta meta = item.getItemMeta();
+        val item = ItemStack(material, amount, 0.toShort())
+        val meta = checkNotNull(item.itemMeta)
 
-        assert meta != null;
-        meta.addItemFlags(ItemFlag.values());
-        meta.displayName(name);
-        if (lore != null && (lore.length != 1 || !PlainTextComponentSerializer.plainText().serialize(lore[0]).isEmpty())) {
-            meta.lore(Arrays.asList(lore));
+        meta.addItemFlags(*ItemFlag.entries.toTypedArray())
+        meta.displayName(name)
+        if (lore.size != 1 || !PlainTextComponentSerializer.plainText().serialize(lore[0]!!)
+                .isEmpty()
+        ) {
+            meta.lore(listOf(*lore))
         } else {
-            meta.lore(null);
+            meta.lore(null)
         }
-        meta.setCustomModelData(customModelData);
+        meta.setCustomModelData(customModelData)
 
-        item.setItemMeta(meta);
-        return item;
+        item.setItemMeta(meta)
+        return item
     }
 
-    public static ItemStack newItemStack(Material material, int amount, int customModelData, String name, String... lore) {
-        Component convertedName = LegacyComponentSerializer.legacyAmpersand().deserialize(name);
+    fun newItemStack(
+        material: Material?,
+        amount: Int,
+        customModelData: Int,
+        name: String?,
+        vararg lore: String?
+    ): ItemStack? {
+        val convertedName: TextComponent? = name?.let { LegacyComponentSerializer.legacyAmpersand().deserialize(it) }
 
-        List<Component> loreComponent = new ArrayList<>();
-        for (String s : lore) {
-            loreComponent.add(LegacyComponentSerializer.legacyAmpersand().deserialize(s));
+        val loreComponent: MutableList<Component?> = ArrayList<Component?>()
+        for (s in lore) {
+            s?.let { loreComponent.add(LegacyComponentSerializer.legacyAmpersand().deserialize(it)) }
         }
-        Component[] convertedLore = loreComponent.toArray(new Component[0]);
+        val convertedLore = loreComponent.toTypedArray<Component?>()
 
-        return newItemStack(material, amount, customModelData, convertedName, convertedLore);
+        return newItemStack(material, amount, customModelData, convertedName, *convertedLore)
     }
 }

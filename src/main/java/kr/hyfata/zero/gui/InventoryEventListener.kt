@@ -1,34 +1,34 @@
-package kr.hyfata.zero.gui;
+package kr.hyfata.zero.gui
 
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 
-import java.util.ArrayList;
-
-public class InventoryEventListener implements Listener {
-    private static final ArrayList<InventoryGUI> inventories = new ArrayList<>();
-
+class InventoryEventListener : Listener {
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
-        for (InventoryGUI menu : inventories) {
-            if (menu.contains(e.getInventory())) {
-                menu.inventoryClickEvent(e);
+    fun onInventoryClick(e: InventoryClickEvent) {
+        for (menu in inventories) {
+            if (menu.contains(e.inventory)) {
+                menu.inventoryClickEvent(e)
             }
         }
     }
 
     @EventHandler
-    public void onInventoryClose(InventoryCloseEvent e) {
-        for (InventoryGUI menu : inventories) {
-            if (menu.contains(e.getInventory())) {
-                menu.inventoryCloseEvent(e);
+    fun onInventoryClose(e: InventoryCloseEvent) {
+        for (menu in inventories) {
+            if (menu.contains(e.inventory)) {
+                menu.inventoryCloseEvent(e)
             }
         }
     }
 
-    public static void registerInventory(InventoryGUI inventory) {
-        inventories.add(inventory);
+    companion object {
+        private val inventories = ArrayList<InventoryGUI>()
+
+        fun registerInventory(inventory: InventoryGUI?) {
+            inventories.add(inventory!!)
+        }
     }
 }

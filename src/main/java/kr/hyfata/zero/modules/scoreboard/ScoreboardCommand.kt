@@ -1,67 +1,54 @@
-package kr.hyfata.zero.modules.scoreboard;
+package kr.hyfata.zero.modules.scoreboard
 
-import kr.hyfata.zero.ZeroCore;
-import org.bukkit.command.*;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import kr.hyfata.zero.ZeroCore
+import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabExecutor
+import org.bukkit.entity.Player
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-public class ScoreboardCommand implements CommandExecutor, TabExecutor {
-    ZeroScoreBoard zeroScoreBoard;
-    public ScoreboardCommand(ZeroScoreBoard zeroScoreBoard) {
-        this.zeroScoreBoard = zeroScoreBoard;
-    }
-
-    @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        Player p = (Player) commandSender;
-        if (args.length != 0) {
-            switch(args[0]) {
-                case "reload":
-                    ZeroCore.getZeroConfig().getScoreboardConfig().reloadConfig();
-                    zeroScoreBoard.removeScoreboardAllPlayers();
-                    zeroScoreBoard.createScoreboardAllPlayers();
-                    p.sendMessage("Reloaded config");
-                    break;
-                case "on":
-                    zeroScoreBoard.removeScoreboard(p);
-                    zeroScoreBoard.createScoreboard(p);
-                    p.sendMessage("§a스코어보드가 켜졌습니다!");
-                    break;
-                case "off":
-                    zeroScoreBoard.removeScoreboard(p);
-                    p.sendMessage("§c스코어보드가 꺼졌습니다!");
-                    break;
-                default:
-                    p.sendMessage("잘못된 명령어 입력!");
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        List<String> list = Arrays.asList("reload", "on", "off");
-        String input = args[0].toLowerCase();
-
-        List<String> completions = null;
-        for (String s : list) {
-            if (s.startsWith(input)) {
-                if (completions == null) {
-                    completions = new ArrayList<>();
+class ScoreboardCommand(var zeroScoreBoard: ZeroScoreBoard) : CommandExecutor, TabExecutor {
+    override fun onCommand(commandSender: CommandSender, command: Command, s: String, args: Array<String>): Boolean {
+        val p = commandSender as Player
+        if (args.isNotEmpty()) {
+            when (args[0]) {
+                "reload" -> {
+                    ZeroCore.Companion.zeroConfig.scoreboardConfig.reloadConfig()
+                    zeroScoreBoard.removeScoreboardAllPlayers()
+                    zeroScoreBoard.createScoreboardAllPlayers()
+                    p.sendMessage("Reloaded config")
                 }
-                completions.add(s);
+
+                "on" -> {
+                    zeroScoreBoard.removeScoreboard(p)
+                    zeroScoreBoard.createScoreboard(p)
+                    p.sendMessage("§a스코어보드가 켜졌습니다!")
+                }
+
+                "off" -> {
+                    zeroScoreBoard.removeScoreboard(p)
+                    p.sendMessage("§c스코어보드가 꺼졌습니다!")
+                }
+
+                else -> p.sendMessage("잘못된 명령어 입력!")
             }
         }
+        return true
+    }
 
-        if (completions != null) {
-            Collections.sort(completions);
-        }
-        return completions;
+    override fun onTabComplete(
+        commandSender: CommandSender,
+        command: Command,
+        alias: String,
+        args: Array<String>
+    ): MutableList<String> {
+        val list = mutableListOf("reload", "on", "off")
+        val input = args[0].lowercase(Locale.getDefault())
+
+        val completions: MutableList<String> = list.filter { it.startsWith(input) }.toMutableList()
+
+        completions.sort()
+        return completions
     }
 }

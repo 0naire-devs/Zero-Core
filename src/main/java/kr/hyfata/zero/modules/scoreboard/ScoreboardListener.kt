@@ -1,30 +1,26 @@
-package kr.hyfata.zero.modules.scoreboard;
+package kr.hyfata.zero.modules.scoreboard
 
-import kr.hyfata.zero.ZeroCore;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import kr.hyfata.zero.ZeroCore
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
-public class ScoreboardListener implements Listener {
-    private final ZeroScoreBoard zeroScoreBoard;
-    public ScoreboardListener(ZeroScoreBoard zeroScoreBoard) {
-        this.zeroScoreBoard = zeroScoreBoard;
-    }
-
+class ScoreboardListener(private val zeroScoreBoard: ZeroScoreBoard) : Listener {
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!ZeroCore.getZeroConfig().getScoreboardConfig().getBoolean("scoreboard.enabled", true)) {
-            return;
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        ZeroCore.Companion.zeroConfig.scoreboardConfig.getBoolean("scoreboard.enabled", true).let {
+            if (!it) {
+                return
+            }
         }
-        Player player = event.getPlayer();
-        zeroScoreBoard.createScoreboard(player);
+        val player = event.getPlayer()
+        zeroScoreBoard.createScoreboard(player)
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        zeroScoreBoard.removeScoreboard(player);
+    fun onPlayerQuit(event: PlayerQuitEvent) {
+        val player = event.getPlayer()
+        zeroScoreBoard.removeScoreboard(player)
     }
 }

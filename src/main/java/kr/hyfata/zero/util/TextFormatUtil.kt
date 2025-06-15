@@ -1,52 +1,48 @@
-package kr.hyfata.zero.util;
+package kr.hyfata.zero.util
 
-import kr.hyfata.zero.ZeroCore;
-import org.bukkit.entity.Player;
+import kr.hyfata.zero.ZeroCore
+import org.bukkit.entity.Player
+import java.text.DecimalFormat
 
-import java.text.DecimalFormat;
-
-public class TextFormatUtil {
-    public static String numberFont(String text) {
+object TextFormatUtil {
+    fun numberFont(text: String): String {
         return text.replace("1", "\uF801\uE024")
-                .replace("2", "\uF801\uE025")
-                .replace("3", "\uF801\uE026")
-                .replace("4", "\uF801\uE027")
-                .replace("5", "\uF801\uE028")
-                .replace("6", "\uF801\uE029")
-                .replace("7", "\uF801\uE02A")
-                .replace("8", "\uF801\uE02B")
-                .replace("9", "\uF801\uE02C")
-                .replace("0", "\uF801\uE02D")
-                .replace(",", "\uF801\uE02E");
+            .replace("2", "\uF801\uE025")
+            .replace("3", "\uF801\uE026")
+            .replace("4", "\uF801\uE027")
+            .replace("5", "\uF801\uE028")
+            .replace("6", "\uF801\uE029")
+            .replace("7", "\uF801\uE02A")
+            .replace("8", "\uF801\uE02B")
+            .replace("9", "\uF801\uE02C")
+            .replace("0", "\uF801\uE02D")
+            .replace(",", "\uF801\uE02E")
     }
 
-    public static String getFormattedText(Player player, String text) {
+    fun getFormattedText(player: Player, text: String): String {
         return getFormattedText(text)
-                .replace("${formattedBalance}", numberFont(getFormattedBalance(player)))
-                .replace("${balance}", getFormattedBalance(player))
-                .replace("${playerName}", player.getName())
-                .replace("${world}", getFormattedWorld(player.getWorld().getName()));
+            .replace("\${formattedBalance}", numberFont(getFormattedBalance(player)!!))
+            .replace("\${balance}", getFormattedBalance(player)!!)
+            .replace("\${playerName}", player.name)
+            .replace("\${world}", getFormattedWorld(player.world.name)!!)
     }
 
-    public static String getFormattedText(String text) {
-        return text.replace("&","§")
-                .replace("\\\n", "");
+    fun getFormattedText(text: String): String {
+        return text.replace("&", "§")
+            .replace("\\\n", "")
     }
 
-    public static String[] getFormattedTextList(String... texts) {
-        for (int i = 0; i < texts.length; i++) {
-            texts[i] = getFormattedText(texts[i]);
-        }
-        return texts;
+    fun getFormattedTextList(vararg texts: String?): Array<String?> {
+        return texts.map { text -> text?.let { getFormattedText(it) } }.toTypedArray()
     }
 
-    private static String getFormattedBalance(Player player) {
-        double balance = VaultUtil.getBalance(player);
-        DecimalFormat df = new DecimalFormat("#,###"); // 소수점 이하 자리 제거
-        return df.format(balance);
+    private fun getFormattedBalance(player: Player?): String? {
+        val balance = VaultUtil.getBalance(player)
+        val df = DecimalFormat("#,###") // 소수점 이하 자리 제거
+        return df.format(balance)
     }
 
-    public static String getFormattedWorld(String world) {
-        return ZeroCore.getZeroConfig().getScoreboardConfig().getString("worlds." + world, world);
+    fun getFormattedWorld(world: String): String? {
+        return ZeroCore.Companion.zeroConfig.scoreboardConfig.getString("worlds.$world", world)
     }
 }

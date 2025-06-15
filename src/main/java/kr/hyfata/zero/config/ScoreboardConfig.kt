@@ -1,57 +1,41 @@
-package kr.hyfata.zero.config;
+package kr.hyfata.zero.config
 
-import kr.hyfata.zero.util.config.ConfigUtil;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
+import kr.hyfata.zero.util.config.ConfigUtil
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.plugin.java.JavaPlugin
+import java.io.File
+import java.io.IOException
 
-import java.io.File;
-import java.io.IOException;
+class ScoreboardConfig : IConfig {
+    private val configFilePath = "scoreboard.yml"
+    private lateinit var configFile: File
+    override lateinit var config: FileConfiguration
+    private lateinit var plugin: JavaPlugin
 
-public class ScoreboardConfig implements IConfig {
-    private final String configFilePath = "scoreboard.yml";
-    private File configFile;
-    private FileConfiguration config;
-    private JavaPlugin plugin;
-
-    @Override
-    public void init(JavaPlugin plugin) {
-        this.plugin = plugin;
-        configFile = new File(plugin.getDataFolder(), configFilePath);
-        ConfigUtil.createConfig(configFile, configFilePath);
-        ConfigUtil.loadConfig(this, configFile, configFilePath);
+    override fun init(plugin: JavaPlugin) {
+        this.plugin = plugin
+        configFile = File(plugin.dataFolder, configFilePath)
+        ConfigUtil.createConfig(configFile, configFilePath)
+        ConfigUtil.loadConfig(this, configFile, configFilePath)
     }
 
-    @Override
-    public FileConfiguration getConfig() {
-        return config;
+    override fun getString(key: String, def: String?): String? {
+        return config.getString(key, def)
     }
 
-    @Override
-    public String getString(String key, String def) {
-        return config.getString(key, def);
+    override fun getBoolean(key: String, def: Boolean): Boolean {
+        return config.getBoolean(key, def)
     }
 
-    @Override
-    public boolean getBoolean(String key, Boolean def) {
-        return config.getBoolean(key, def);
-    }
-
-    @Override
-    public void setConfig(FileConfiguration config) {
-        this.config = config;
-    }
-
-    @Override
-    public void saveConfig() {
+    override fun saveConfig() {
         try {
-            config.save(configFile);
-        } catch (IOException e) {
-            plugin.getLogger().severe(ConfigUtil.getSaveConfigErrorMsg(configFile));
+            config.save(configFile)
+        } catch (_: IOException) {
+            plugin.logger.severe(ConfigUtil.getSaveConfigErrorMsg(configFile))
         }
     }
 
-    @Override
-    public void reloadConfig() {
-        ConfigUtil.loadConfig(this, configFile, configFilePath);
+    override fun reloadConfig() {
+        configFile.let { ConfigUtil.loadConfig(this, it, configFilePath) }
     }
 }

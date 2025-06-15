@@ -1,60 +1,50 @@
-package kr.hyfata.zero.vault;
+package kr.hyfata.zero.vault
 
-import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import net.milkbowl.vault.economy.Economy
+import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 
-public final class VaultHook {
+object VaultHook {
+    private var economy: Economy? = null
 
-    private static Economy economy = null;
+    private fun setupEconomy() {
+        val rsp = Bukkit.getServicesManager().getRegistration(Economy::class.java)
 
-    private VaultHook() {
+        if (rsp != null) economy = rsp.getProvider()
     }
 
-    private static void setupEconomy() {
-        final RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
-
-        if (rsp != null)
-            economy = rsp.getProvider();
+    fun hasEconomy(): Boolean {
+        return economy != null
     }
 
-    public static boolean hasEconomy() {
-        return economy != null;
+    fun getBalance(target: OfflinePlayer?): Double {
+        if (!hasEconomy()) throw UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.")
+
+        return economy!!.getBalance(target)
     }
 
-    public static double getBalance(OfflinePlayer target) {
-        if (!hasEconomy())
-            throw new UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.");
+    fun withdraw(target: OfflinePlayer?, amount: Double): String? {
+        if (!hasEconomy()) throw UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.")
 
-        return economy.getBalance(target);
+        return economy!!.withdrawPlayer(target, amount).errorMessage
     }
 
-    public static String withdraw(OfflinePlayer target, double amount) {
-        if (!hasEconomy())
-            throw new UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.");
+    fun deposit(target: OfflinePlayer?, amount: Double): String? {
+        if (!hasEconomy()) throw UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.")
 
-        return economy.withdrawPlayer(target, amount).errorMessage;
+        return economy!!.depositPlayer(target, amount).errorMessage
     }
 
-    public static String deposit(OfflinePlayer target, double amount) {
-        if (!hasEconomy())
-            throw new UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.");
+    fun formatCurrencySymbol(amount: Double): String? {
+        if (!hasEconomy()) throw UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.")
 
-        return economy.depositPlayer(target, amount).errorMessage;
-    }
-
-    public static String formatCurrencySymbol(double amount) {
-        if (!hasEconomy())
-            throw new UnsupportedOperationException("Vault Economy not found, call hasEconomy() to check it first.");
-
-        return economy.format(amount);
+        return economy!!.format(amount)
         //return amount + " " + (((int) amount) == 1 ? economy.currencyNameSingular() : economy.currencyNamePlural());
     }
 
-    static {
+    init {
         if (Bukkit.getPluginManager().getPlugin("Vault") != null) {
-            setupEconomy();
+            setupEconomy()
         }
     }
 }

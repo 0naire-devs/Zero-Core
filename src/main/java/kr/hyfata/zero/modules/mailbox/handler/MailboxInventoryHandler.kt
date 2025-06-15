@@ -1,333 +1,343 @@
-package kr.hyfata.zero.modules.mailbox.handler;
+package kr.hyfata.zero.modules.mailbox.handler
 
-import kr.hyfata.zero.gui.InventoryEventListener;
-import kr.hyfata.zero.gui.InventoryGUI;
-import kr.hyfata.zero.modules.mailbox.dto.Mailbox;
-import kr.hyfata.zero.modules.mailbox.dto.MailboxButton;
-import kr.hyfata.zero.modules.mailbox.dto.MailboxInventoryInfo;
-import kr.hyfata.zero.util.InventoryUtil;
-import kr.hyfata.zero.util.ItemUtil;
-import kr.hyfata.zero.util.TextFormatUtil;
-import kr.hyfata.zero.util.TimeUtil;
-import kr.hyfata.zero.util.config.MailboxConfigUtil;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
+import kr.hyfata.zero.gui.InventoryEventListener
+import kr.hyfata.zero.gui.InventoryGUI
+import kr.hyfata.zero.modules.mailbox.dto.Mailbox
+import kr.hyfata.zero.modules.mailbox.dto.MailboxButton
+import kr.hyfata.zero.modules.mailbox.dto.MailboxInventoryInfo
+import kr.hyfata.zero.util.InventoryUtil
+import kr.hyfata.zero.util.ItemUtil
+import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.util.TimeUtil
+import kr.hyfata.zero.util.config.MailboxConfigUtil
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.bukkit.Bukkit
+import org.bukkit.configuration.InvalidConfigurationException
+import org.bukkit.entity.Player
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.inventory.Inventory
+import org.bukkit.plugin.java.JavaPlugin
+import java.sql.SQLException
+import java.util.concurrent.CompletableFuture
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+class MailboxInventoryHandler(var plugin: JavaPlugin) : InventoryGUI {
+    private val inventories = HashMap<Inventory, MailboxInventoryInfo>()
+    private val db = MailboxDB()
 
-public class MailboxInventoryHandler implements InventoryGUI {
-    JavaPlugin plugin;
-    private final HashMap<Inventory, MailboxInventoryInfo> inventories = new HashMap<>();
-    private final MailboxDB db = new MailboxDB();
-
-    public MailboxInventoryHandler(JavaPlugin plugin) {
-        this.plugin = plugin;
-        InventoryEventListener.registerInventory(this);
+    init {
+        InventoryEventListener.Companion.registerInventory(this)
     }
 
-    @Override
-    public void openInventory(Player p) {
-        Inventory iv = Bukkit.createInventory(p, MailboxConfigUtil.getRows() * 9,
-                TextFormatUtil.getFormattedText(p, MailboxConfigUtil.getMailBoxTitle()));
+    override fun openInventory(p: Player) {
+        val iv = Bukkit.createInventory(
+            p, MailboxConfigUtil.rows * 9,
+            TextFormatUtil.getFormattedText(p, MailboxConfigUtil.mailBoxTitle!!)
+        )
 
-        p.openInventory(iv);
+        p.openInventory(iv)
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            cleanupExpiredMailboxes();
-            MailboxInventoryInfo info = createMailboxInventoryInfo(p);
-            if (info == null)
-                return;
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
+            cleanupExpiredMailboxes()
+            val info = createMailboxInventoryInfo(p)
+            if (info == null) return@Runnable
 
-            inventories.put(iv, info);
-            setItems(iv, 1);
-        });
+            inventories.put(iv, info)
+            setItems(iv, 1)
+        })
     }
 
-    private void setItems(Inventory iv, int page) {
-        inventories.get(iv).setCurrentPage(page);
-        iv.clear();
+    private fun setItems(iv: Inventory, page: Int) {
+        inventories.get(iv)!!.currentPage = page
+        iv.clear()
 
-        ArrayList<Mailbox> mailboxes = inventories.get(iv).getMailboxes(); // Mailbox items
+        val mailboxes = inventories.get(iv)!!.mailboxes // Mailbox items
 
-        int[] guiRows = MailboxConfigUtil.getRewardItemRowRange();
-        int guiStartSlot = (guiRows[0] - 1) * 9;
-        int itemCount = (guiRows[1] - guiRows[0]) * 9; // total mailbox item
+        val guiRows = MailboxConfigUtil.rewardItemRowRange
+        val guiStartSlot = (guiRows[0] - 1) * 9
+        val itemCount = (guiRows[1] - guiRows[0]) * 9 // total mailbox item
 
-        int currentPageStartIndex = (page - 1) * itemCount; // var mailbox's start index
-        int currentPageEndIndex = currentPageStartIndex + itemCount;
+        val currentPageStartIndex = (page - 1) * itemCount // var mailbox's start index
+        val currentPageEndIndex = currentPageStartIndex + itemCount
 
         // set mailbox items
-        for (int mailboxIndex = currentPageStartIndex, guiSlot = guiStartSlot; mailboxIndex < currentPageEndIndex; mailboxIndex++, guiSlot++) {
-            if (mailboxes == null || mailboxes.isEmpty())
-                break;
-            if (mailboxIndex < mailboxes.size()) {
-                Mailbox mailbox = mailboxes.get(mailboxIndex);
-                setMailboxItemToInventory(iv, mailbox, guiSlot);
+        var mailboxIndex = currentPageStartIndex
+        var guiSlot = guiStartSlot
+        while (mailboxIndex < currentPageEndIndex) {
+            if (mailboxes == null || mailboxes.isEmpty()) break
+            if (mailboxIndex < mailboxes.size) {
+                val mailbox = mailboxes[mailboxIndex]
+                setMailboxItemToInventory(iv, mailbox!!, guiSlot)
             } else {
-                break;
+                break
             }
+            mailboxIndex++
+            guiSlot++
         }
 
         // set buttons
-        setNavButton(iv, MailboxConfigUtil.getAllRewardsButton(), page);
-        if (page != 1)
-            setNavButton(iv, MailboxConfigUtil.getPreviousButton(), page);
-        if (mailboxes != null && currentPageEndIndex < mailboxes.size())
-            setNavButton(iv, MailboxConfigUtil.getNextButton(), page);
+        setNavButton(iv, MailboxConfigUtil.allRewardsButton, page)
+        if (page != 1) setNavButton(iv, MailboxConfigUtil.previousButton, page)
+        if (mailboxes != null && currentPageEndIndex < mailboxes.size) setNavButton(
+            iv,
+            MailboxConfigUtil.nextButton,
+            page
+        )
     }
 
-    @Override
-    public void inventoryClickEvent(InventoryClickEvent e) {
-        e.setCancelled(true);
+    override fun inventoryClickEvent(e: InventoryClickEvent) {
+        e.isCancelled = true
         if (containsTaskItem(e) ||
-                (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getWhoClicked().getInventory())) ||
-                inventories.get(e.getInventory()).isShouldCancel()
+            (e.clickedInventory != null && e.clickedInventory == e.whoClicked.inventory) ||
+            inventories.get(e.inventory)!!.isShouldCancel
         ) {
-            return;
+            return
         }
 
         if (InventoryUtil.isValidItem(e)) {
-            onValidItemClick(e);
+            onValidItemClick(e)
         }
     }
 
-    private void onValidItemClick(InventoryClickEvent e) {
-        Inventory iv = e.getInventory();
+    private fun onValidItemClick(e: InventoryClickEvent) {
+        val iv = e.inventory
 
-        if (buttonPosContains(MailboxConfigUtil.getPreviousButton(), e.getSlot())) {
-            setItems(iv, inventories.get(iv).getCurrentPage() - 1); // goto previous page
-        } else if (buttonPosContains(MailboxConfigUtil.getNextButton(), e.getSlot())) {
-            setItems(iv, inventories.get(iv).getCurrentPage() + 1); // goto next page
+        if (buttonPosContains(MailboxConfigUtil.previousButton, e.slot)) {
+            setItems(iv, inventories.get(iv)!!.currentPage - 1) // goto previous page
+        } else if (buttonPosContains(MailboxConfigUtil.nextButton, e.slot)) {
+            setItems(iv, inventories.get(iv)!!.currentPage + 1) // goto next page
         } else {
-            rewardClickEvent(e);
+            rewardClickEvent(e)
         }
     }
 
-    private void rewardClickEvent(InventoryClickEvent e) {
-        Player p = (Player) e.getWhoClicked();
-        Inventory iv = e.getInventory();
-        ArrayList<Mailbox> mailboxes = inventories.get(iv).getMailboxes();
+    private fun rewardClickEvent(e: InventoryClickEvent) {
+        val p = e.whoClicked as Player
+        val iv = e.inventory
+        val mailboxes = inventories.get(iv)!!.mailboxes
 
         if (InventoryUtil.isInventoryFull((p))) {
-            setItemError(e, "&c인벤토리 공간이 부족합니다.");
-        } else if (buttonPosContains(MailboxConfigUtil.getAllRewardsButton(), e.getSlot())) { // get all rewards
-            if (mailboxes.isEmpty()) {
-                setItemError(e, "&c이미 모든 보상을 수령했습니다!");
-            } else {
-                if (inventories.get(iv).isShouldCancel()) {
-                    return;
+            setItemError(e, "&c인벤토리 공간이 부족합니다.")
+        } else if (buttonPosContains(MailboxConfigUtil.allRewardsButton, e.slot)) { // get all rewards
+            mailboxes?.let {
+                if (it.isEmpty()) {
+                    setItemError(e, "&c이미 모든 보상을 수령했습니다!")
+                } else {
+                    if (inventories.get(iv)!!.isShouldCancel) {
+                        return
+                    }
+                    inventories.get(iv)!!.isShouldCancel = true
+                    CompletableFuture.runAsync {
+                        getAllRewards(e)
+                        inventories.get(iv)!!.isShouldCancel = false
+                    }
                 }
-                inventories.get(iv).setShouldCancel(true);
-                CompletableFuture.runAsync(() -> {
-                    getAllRewards(e);
-                    inventories.get(iv).setShouldCancel(false);
-                });
             }
         } else { // get a reward
-            int guiRow1 = MailboxConfigUtil.getRewardItemRowRange()[0];
-            int idx = e.getSlot() - (guiRow1 - 1) * 9;
+            val guiRow1 = MailboxConfigUtil.rewardItemRowRange[0]
+            val idx = e.slot - (guiRow1 - 1) * 9
 
-            if (inventories.get(iv).isShouldCancel()) {
-                return;
+            if (inventories.get(iv)!!.isShouldCancel) {
+                return
             }
-            inventories.get(iv).setShouldCancel(true);
-            CompletableFuture.runAsync(() -> {
+            inventories.get(iv)!!.isShouldCancel = true
+            CompletableFuture.runAsync {
                 try {
-                    getReward(p, iv, idx);
-                    setItems(iv, inventories.get(iv).getCurrentPage()); // reload inventory
-                } catch (InvalidConfigurationException | SQLException ex) {
-                    ex.printStackTrace(System.err);
-                    setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
+                    getReward(p, iv, idx)
+                    setItems(iv, inventories.get(iv)!!.currentPage) // reload inventory
+                } catch (ex: InvalidConfigurationException) {
+                    ex.printStackTrace(System.err)
+                    setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.message)
+                } catch (ex: SQLException) {
+                    ex.printStackTrace(System.err)
+                    setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.message)
                 }
-                inventories.get(iv).setShouldCancel(false);
-            });
+                inventories.get(iv)!!.isShouldCancel = false
+            }
         }
     }
 
-    private void getAllRewards(InventoryClickEvent e) {
-        ArrayList<Mailbox> mailboxes = inventories.get(e.getInventory()).getMailboxes();
-        int size = mailboxes.size();
-        Player p = (Player) e.getWhoClicked();
-        boolean inventoryFull = false;
+    private fun getAllRewards(e: InventoryClickEvent) {
+        val mailboxes = inventories.get(e.inventory)!!.mailboxes!!
+        val size = mailboxes.size
+        val p = e.whoClicked as Player
+        var inventoryFull = false
 
-        for (int i = 0; i < size; i++) {
+        repeat(size) {
             if (InventoryUtil.isInventoryFull(p)) {
-                inventoryFull = true;
-                break;
+                inventoryFull = true
+                return@repeat
             }
 
             try {
-                getReward(p, e.getInventory(), 0);
-            } catch (InvalidConfigurationException | SQLException ex) {
-                setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.getMessage());
-                plugin.getLogger().severe("Failed to get reward: " + ex.getMessage());
-                return;
+                getReward(p, e.inventory, 0)
+            } catch (ex: InvalidConfigurationException) {
+                setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.message)
+                plugin.logger.severe("Failed to get reward: " + ex.message)
+                return
+            } catch (ex: SQLException) {
+                setItemError(e, "&c보상을 수령받는 도중 오류가 발생했습니다!", "&c" + ex.message)
+                plugin.logger.severe("Failed to get reward: " + ex.message)
+                return
             }
         }
 
-        setItems(e.getInventory(), 1); // goto first page
+        setItems(e.inventory, 1) // goto first page
         if (inventoryFull) {
-            setItemError(e, "&c인벤토리 공간이 부족합니다!", "&7여유 공간을 확보해주세요!");
+            setItemError(e, "&c인벤토리 공간이 부족합니다!", "&7여유 공간을 확보해주세요!")
         } else {
-            setItemSuccess(e, "&a보상을 성공적으로 수령했습니다!");
+            setItemSuccess(e, "&a보상을 성공적으로 수령했습니다!")
         }
     }
 
-    private void getReward(Player p, Inventory iv, int index) throws InvalidConfigurationException, SQLException {
-        MailboxInventoryInfo info = inventories.get(iv);
-        Mailbox mailbox = info.getMailboxes().get(index);
+    @Throws(InvalidConfigurationException::class, SQLException::class)
+    private fun getReward(p: Player, iv: Inventory?, index: Int) {
+        val info: MailboxInventoryInfo = inventories[iv]!!
+        val mailbox = info.mailboxes?.get(index)
 
         // db
-        if (mailbox.getUuid().equals("all")) {
-            db.readMailbox(p, mailbox.getMailId());
+        if (mailbox?.uuid == "all") {
+            db.readMailbox(p, mailbox.mailId)
         } else {
-            db.deleteMailbox(mailbox.getMailId());
+            mailbox?.let { db.deleteMailbox(it.mailId) }
         }
 
-        p.getInventory().addItem(ItemUtil.base64ToItemStack(mailbox.getItem()));
-        inventories.get(iv).getMailboxes().remove(index);
+        ItemUtil.base64ToItemStack(mailbox?.item)?.let { p.inventory.addItem(it) }
+        inventories[iv]!!.mailboxes?.removeAt(index)
     }
 
-    private MailboxInventoryInfo createMailboxInventoryInfo(Player p) {
+    private fun createMailboxInventoryInfo(p: Player): MailboxInventoryInfo? {
         try {
-            MailboxInventoryInfo info = new MailboxInventoryInfo();
-            info.setMailboxes(db.getMailboxes(p));
-            return info;
-        } catch (Exception e) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                p.closeInventory();
-                p.sendMessage("[우편함] 오류가 발생하여 우편함을 볼 수 없습니다!");
-                e.printStackTrace(System.err);
-            });
+            val info = MailboxInventoryInfo()
+            info.mailboxes = db.getMailboxes(p)
+            return info
+        } catch (e: Exception) {
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                p.closeInventory()
+                p.sendMessage("[우편함] 오류가 발생하여 우편함을 볼 수 없습니다!")
+                e.printStackTrace(System.err)
+            })
         }
-        return null;
+        return null
     }
 
-    private void setMailboxItemToInventory(Inventory iv, Mailbox mailbox, int guiIndex) {
+    private fun setMailboxItemToInventory(iv: Inventory, mailbox: Mailbox, guiIndex: Int) {
         try {
-            ItemStack itemStack = ItemUtil.base64ToItemStack(mailbox.getItem());
+            val itemStack = ItemUtil.base64ToItemStack(mailbox.item)
 
-            List<Component> lore = new ArrayList<>();
-            lore.add(Component.text(""));
-            lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    TimeUtil.getRemainingTimeText(mailbox.getExpiryTime())
-            )); // add expire date
+            val lore = ArrayList<Component?>()
+            lore.add(Component.text(""))
+            lore.add(
+                LegacyComponentSerializer.legacyAmpersand().deserialize(
+                    TimeUtil.getRemainingTimeText(mailbox.expiryTime!!)
+                )
+            ) // add expire date
 
-            iv.setItem(guiIndex, ItemUtil.addLore(itemStack, lore)); // set mailbox item
-        } catch (InvalidConfigurationException e) {
-            plugin.getLogger().severe("Failed to convert base64 to ItemStack: " + e.getMessage());
+            iv.setItem(guiIndex, ItemUtil.addLore(itemStack!!, lore)) // set mailbox item
+        } catch (e: InvalidConfigurationException) {
+            plugin.logger.severe("Failed to convert base64 to ItemStack: " + e.message)
         }
     }
 
-    private void setNavButton(Inventory iv, MailboxButton button, int page) {
-        List<Integer> positions = button.getPositions();
-        for (int pos : positions) {
-            ItemStack item = ItemUtil.newItemStack(
-                    button.getItem(), 1, button.getCustomModelData(),
-                    button.getName().replace("${page}", String.valueOf(page)),
-                    button.getLore(page)
-            );
-            iv.setItem(pos, item);
+    private fun setNavButton(iv: Inventory, button: MailboxButton, page: Int) {
+        val positions = button.positions!!
+        for (pos in positions) {
+            val item = ItemUtil.newItemStack(
+                button.item, 1, button.customModelData,
+                button.name?.replace("\${page}", page.toString()),
+                *button.getLore(page)
+            )
+            iv.setItem(pos!!, item)
         }
     }
 
-    private boolean buttonPosContains(MailboxButton button, int pos) {
-        List<Integer> positions = button.getPositions();
-        for (int p : positions) {
-            if (p == pos)
-                return true;
+    private fun buttonPosContains(button: MailboxButton, pos: Int): Boolean {
+        val positions = button.positions!!
+        for (p in positions) {
+            if (p == pos) return true
         }
-        return false;
+        return false
     }
 
-    private List<Integer> getButtonPos(int pos) {
-        MailboxButton getAllRewardsButton = MailboxConfigUtil.getAllRewardsButton();
-        MailboxButton previousButton = MailboxConfigUtil.getPreviousButton();
-        MailboxButton nextButton = MailboxConfigUtil.getNextButton();
+    private fun getButtonPos(pos: Int): MutableList<Int?> {
+        val getAllRewardsButton = MailboxConfigUtil.allRewardsButton
+        val previousButton = MailboxConfigUtil.previousButton
+        val nextButton = MailboxConfigUtil.nextButton
 
-        if (buttonPosContains(getAllRewardsButton, pos))
-            return getAllRewardsButton.getPositions();
-        if (buttonPosContains(previousButton, pos))
-            return previousButton.getPositions();
-        if (buttonPosContains(nextButton, pos))
-            return nextButton.getPositions();
+        if (buttonPosContains(getAllRewardsButton, pos)) return getAllRewardsButton.positions!!
+        if (buttonPosContains(previousButton, pos)) return previousButton.positions!!
+        if (buttonPosContains(nextButton, pos)) return nextButton.positions!!
 
-        return Collections.singletonList(pos);
+        return mutableListOf(pos)
     }
 
-    private void setItemError(InventoryClickEvent e, String name, String... lore) {
-        Material errMaterial = MailboxConfigUtil.getErrorMaterial();
-        String formattedName = TextFormatUtil.getFormattedText(name);
-        String[] formattedLore = TextFormatUtil.getFormattedTextList(lore);
-        int customModelData = MailboxConfigUtil.getErrorCustomModelData();
-        List<Integer> positions = getButtonPos(e.getSlot());
+    private fun setItemError(e: InventoryClickEvent, name: String, vararg lore: String?) {
+        val errMaterial = MailboxConfigUtil.errorMaterial
+        val formattedName = TextFormatUtil.getFormattedText(name)
+        val formattedLore = TextFormatUtil.getFormattedTextList(*lore)
+        val customModelData = MailboxConfigUtil.errorCustomModelData
+        val positions = getButtonPos(e.slot)
 
-        ItemStack errorItem = ItemUtil.newItemStack(errMaterial, 1, customModelData, formattedName, formattedLore);
-        InventoryUtil.setTempItem(e.getInventory(), errorItem, e.getCurrentItem(), positions.stream().mapToInt(Integer::intValue).toArray());
+        val errorItem = ItemUtil.newItemStack(errMaterial, 1, customModelData, formattedName, *formattedLore)
+        InventoryUtil.setTempItem(
+            e.inventory,
+            errorItem,
+            e.getCurrentItem(),
+            *positions.stream().mapToInt { obj: Int? -> obj!! }.toArray()
+        )
     }
 
-    private void setItemSuccess(InventoryClickEvent e, String name, String... lore) {
-        Material material = MailboxConfigUtil.getSuccessMaterial();
-        String formattedName = TextFormatUtil.getFormattedText(name);
-        String[] formattedLore = TextFormatUtil.getFormattedTextList(lore);
-        int customModelData = MailboxConfigUtil.getSuccessCustomModelData();
-        List<Integer> positions = getButtonPos(e.getSlot());
+    private fun setItemSuccess(e: InventoryClickEvent, name: String, vararg lore: String?) {
+        val material = MailboxConfigUtil.successMaterial
+        val formattedName = TextFormatUtil.getFormattedText(name)
+        val formattedLore = TextFormatUtil.getFormattedTextList(*lore)
+        val customModelData = MailboxConfigUtil.successCustomModelData
+        val positions = getButtonPos(e.slot)
 
-        ItemStack item = ItemUtil.newItemStack(material, 1, customModelData, formattedName, formattedLore);
-        InventoryUtil.setTempItem(e.getInventory(), item, e.getCurrentItem(), positions.stream().mapToInt(Integer::intValue).toArray());
+        val item = ItemUtil.newItemStack(material, 1, customModelData, formattedName, *formattedLore)
+        InventoryUtil.setTempItem(
+            e.inventory,
+            item,
+            e.getCurrentItem(),
+            *positions.stream().mapToInt { obj: Int? -> obj!! }.toArray()
+        )
     }
 
-    private boolean containsTaskItem(InventoryClickEvent e) {
-        Inventory iv = e.getInventory();
+    private fun containsTaskItem(e: InventoryClickEvent): Boolean {
+        val iv = e.inventory
 
-        Material err_material = MailboxConfigUtil.getErrorMaterial();
-        int err_customModelData = MailboxConfigUtil.getErrorCustomModelData();
-        Material suc_material = MailboxConfigUtil.getSuccessMaterial();
-        int suc_customModelData = MailboxConfigUtil.getSuccessCustomModelData();
+        val errMaterial = MailboxConfigUtil.errorMaterial
+        val errCustomModelData = MailboxConfigUtil.errorCustomModelData
+        val sucMaterial = MailboxConfigUtil.successMaterial
+        val successCustomModelData = MailboxConfigUtil.successCustomModelData
 
-        return InventoryUtil.inventoryContains(iv, err_material, err_customModelData) ||
-                InventoryUtil.inventoryContains(iv, suc_material, suc_customModelData);
+        return InventoryUtil.inventoryContains(iv, errMaterial, errCustomModelData) ||
+                InventoryUtil.inventoryContains(iv, sucMaterial, successCustomModelData)
     }
 
-    private void cleanupExpiredMailboxes() {
+    private fun cleanupExpiredMailboxes() {
         try {
-            db.cleanupExpiredMailboxes();
-        } catch (SQLException e) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                plugin.getLogger().severe("Failed to cleanup expired mailboxes: " + e.getMessage());
-                e.printStackTrace(System.err);
-            });
+            db.cleanupExpiredMailboxes()
+        } catch (e: SQLException) {
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                plugin.getLogger().severe("Failed to cleanup expired mailboxes: " + e.message)
+                e.printStackTrace(System.err)
+            })
         }
     }
 
-    @Override
-    public void inventoryCloseEvent(InventoryCloseEvent e) {
-        inventories.remove(e.getInventory());
+    override fun inventoryCloseEvent(e: InventoryCloseEvent) {
+        inventories.remove(e.getInventory())
     }
 
-    @Override
-    public void closeInventoryAllPlayers() {
-        for (Inventory inv : inventories.keySet()) {
-            inv.close();
+    override fun closeInventoryAllPlayers() {
+        for (inv in inventories.keys) {
+            inv.close()
         }
     }
 
-    @Override
-    public boolean contains(Inventory inventory) {
-        return inventories.containsKey(inventory);
+    override fun contains(inventory: Inventory): Boolean {
+        return inventories.containsKey(inventory)
     }
 }

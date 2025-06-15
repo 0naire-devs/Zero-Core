@@ -1,77 +1,76 @@
-package kr.hyfata.zero.modules.scoreboard;
+package kr.hyfata.zero.modules.scoreboard
 
-import fr.mrmicky.fastboard.FastBoard;
-import kr.hyfata.zero.ZeroCore;
-import kr.hyfata.zero.util.TextFormatUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import fr.mrmicky.fastboard.FastBoard
+import kr.hyfata.zero.ZeroCore
+import kr.hyfata.zero.util.TextFormatUtil
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.plugin.java.JavaPlugin
+import java.util.*
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+class ZeroScoreBoard(private val plugin: JavaPlugin) {
+    private val boards: MutableMap<UUID?, FastBoard> = HashMap<UUID?, FastBoard>()
 
-public class ZeroScoreBoard {
-    private final Map<UUID, FastBoard> boards = new HashMap<>();
-    private final JavaPlugin plugin;
-
-    public ZeroScoreBoard(JavaPlugin plugin) {
-        this.plugin = plugin;
-        setListeners();
-        createScoreboardAllPlayers();
-        Bukkit.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            for (FastBoard board : this.boards.values()) {
-                updateBoard(board);
+    init {
+        setListeners()
+        createScoreboardAllPlayers()
+        Bukkit.getServer().scheduler.runTaskTimer(plugin, Runnable {
+            for (board in this.boards.values) {
+                updateBoard(board)
             }
-        }, 0, 20);
-        plugin.getLogger().info("Zero Scoreboard has been enabled.");
+        }, 0, 20)
+        plugin.logger.info("Zero Scoreboard has been enabled.")
     }
 
-    private void setListeners() {
-        ScoreboardCommand command = new ScoreboardCommand(this);
-        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setExecutor(command);
-        Objects.requireNonNull(plugin.getCommand("zeroscoreboard")).setTabCompleter(command);
-        Bukkit.getServer().getPluginManager().registerEvents(new ScoreboardListener(this), plugin);
+    private fun setListeners() {
+        val command = ScoreboardCommand(this)
+        plugin.getCommand("zeroscoreboard")?.setExecutor(command)
+        plugin.getCommand("zeroscoreboard")?.tabCompleter = command
+        Bukkit.getServer().pluginManager.registerEvents(ScoreboardListener(this), plugin)
     }
 
-    public void onDisable() {
-        removeScoreboardAllPlayers();
-        plugin.getLogger().info("Zero Scoreboard has been disabled.");
+    fun onDisable() {
+        removeScoreboardAllPlayers()
+        plugin.logger.info("Zero Scoreboard has been disabled.")
     }
 
-    public void createScoreboardAllPlayers() {
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            createScoreboard(player);
+    fun createScoreboardAllPlayers() {
+        for (player in Bukkit.getServer().onlinePlayers) {
+            createScoreboard(player)
         }
     }
 
-    public void createScoreboard(Player player) {
-        FastBoard board = new FastBoard(player);
-        board.updateTitle(TextFormatUtil.getFormattedText(player,
-                ZeroCore.getZeroConfig().getScoreboardConfig().getString("scoreboard.title", "&cERROR")));
+    fun createScoreboard(player: Player) {
+        val board = FastBoard(player)
+        board.updateTitle(
+            TextFormatUtil.getFormattedText(
+                player,
+                ZeroCore.Companion.zeroConfig.scoreboardConfig.getString("scoreboard.title", "&cERROR")!!
+            )
+        )
 
-        this.boards.put(player.getUniqueId(), board);
+        this.boards.put(player.uniqueId, board)
     }
 
-    public void removeScoreboardAllPlayers() {
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            removeScoreboard(player);
+    fun removeScoreboardAllPlayers() {
+        for (player in Bukkit.getServer().onlinePlayers) {
+            removeScoreboard(player)
         }
     }
 
-    public void removeScoreboard(Player player) {
-        FastBoard board = this.boards.remove(player.getUniqueId());
-
-        if (board != null) {
-            board.delete();
-        }
+    fun removeScoreboard(player: Player) {
+        val board = this.boards.remove(player.uniqueId)
+        board?.delete()
     }
 
-    private void updateBoard(FastBoard board) {
-        board.updateLines(TextFormatUtil.getFormattedText(board.getPlayer(),
-                ZeroCore.getZeroConfig().getScoreboardConfig().getString("scoreboard.message", "&cERROR"))
-                        .replace("\\\n", "")
-                .split("\n"));
+    private fun updateBoard(board: FastBoard) {
+        board.updateLines(
+            *TextFormatUtil.getFormattedText(
+                board.player,
+                ZeroCore.Companion.zeroConfig.scoreboardConfig.getString("scoreboard.message", "&cERROR")!!
+            )
+                .replace("\\\n", "")
+                .split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        )
     }
 }
