@@ -2,7 +2,7 @@ package kr.hyfata.zero.modules.scoreboard
 
 import fr.mrmicky.fastboard.FastBoard
 import kr.hyfata.zero.ZeroCore
-import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.helper.format.TextFormatHelper
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -43,7 +43,7 @@ class ZeroScoreBoard(private val plugin: JavaPlugin) {
     fun createScoreboard(player: Player) {
         val board = FastBoard(player)
         board.updateTitle(
-            TextFormatUtil.getFormattedText(
+            TextFormatHelper.getFormattedText(
                 player,
                 ZeroCore.Companion.zeroConfig.scoreboardConfig.getString("scoreboard.title", "&cERROR")!!
             )
@@ -65,7 +65,7 @@ class ZeroScoreBoard(private val plugin: JavaPlugin) {
 
     private fun updateBoard(board: FastBoard) {
         board.updateLines(
-            *TextFormatUtil.getFormattedText(
+            *TextFormatHelper.getFormattedText(
                 board.player,
                 ZeroCore.Companion.zeroConfig.scoreboardConfig.getString("scoreboard.message", "&cERROR")!!
             )

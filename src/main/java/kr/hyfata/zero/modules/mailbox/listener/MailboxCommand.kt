@@ -2,7 +2,7 @@ package kr.hyfata.zero.modules.mailbox.listener
 
 import kr.hyfata.zero.ZeroCore
 import kr.hyfata.zero.modules.mailbox.ZeroMailbox
-import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.helper.format.TextFormatHelper
 import kr.hyfata.zero.util.TimeUtil
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -26,13 +26,13 @@ class MailboxCommand(var mailbox: ZeroMailbox) : CommandExecutor, TabExecutor {
                 "발송" -> {
                     val target = p.server.getOfflinePlayer(args[1])
                     if (!target.hasPlayedBefore()) {
-                        sender.sendMessage(TextFormatUtil.getFormattedText("&c플레이어를 찾을 수 없습니다!"))
+                        sender.sendMessage(TextFormatHelper.getFormattedText("&c플레이어를 찾을 수 없습니다!"))
                     } else {
                         CompletableFuture.runAsync {
                             try {
                                 mailbox.handler.sendMailToPlayer(p, target, args[2], args[3])
                             } catch (_: ParseException) {
-                                sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"))
+                                sender.sendMessage(TextFormatHelper.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"))
                             }
                         }
                     }
@@ -43,7 +43,7 @@ class MailboxCommand(var mailbox: ZeroMailbox) : CommandExecutor, TabExecutor {
                         try {
                             mailbox.handler.sendMailToAll(p, args[1], args[2])
                         } catch (_: ParseException) {
-                            sender.sendMessage(TextFormatUtil.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"))
+                            sender.sendMessage(TextFormatHelper.getFormattedText("&c만료날짜 파싱에 실패했습니다! 만료날짜를 다시 확인해주세요!"))
                         }
                     }
                 }

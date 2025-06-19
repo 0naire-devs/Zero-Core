@@ -7,7 +7,7 @@ import kr.hyfata.zero.modules.mailbox.dto.MailboxButton
 import kr.hyfata.zero.modules.mailbox.dto.MailboxInventoryInfo
 import kr.hyfata.zero.util.InventoryUtil
 import kr.hyfata.zero.util.ItemUtil
-import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.helper.format.TextFormatHelper
 import kr.hyfata.zero.util.TimeUtil
 import kr.hyfata.zero.util.config.MailboxConfigUtil
 import net.kyori.adventure.text.Component
@@ -33,7 +33,7 @@ class MailboxInventoryHandler(var plugin: JavaPlugin) : InventoryGUI {
     override fun openInventory(p: Player) {
         val iv = Bukkit.createInventory(
             p, MailboxConfigUtil.rows * 9,
-            TextFormatUtil.getFormattedText(p, MailboxConfigUtil.mailBoxTitle!!)
+            TextFormatHelper.getFormattedText(p, MailboxConfigUtil.mailBoxTitle!!)
         )
 
         p.openInventory(iv)
@@ -274,8 +274,8 @@ class MailboxInventoryHandler(var plugin: JavaPlugin) : InventoryGUI {
 
     private fun setItemError(e: InventoryClickEvent, name: String, vararg lore: String?) {
         val errMaterial = MailboxConfigUtil.errorMaterial
-        val formattedName = TextFormatUtil.getFormattedText(name)
-        val formattedLore = TextFormatUtil.getFormattedTextList(*lore)
+        val formattedName = TextFormatHelper.getFormattedText(name)
+        val formattedLore = TextFormatHelper.getFormattedTextList(*lore)
         val customModelData = MailboxConfigUtil.errorCustomModelData
         val positions = getButtonPos(e.slot)
 
@@ -290,8 +290,8 @@ class MailboxInventoryHandler(var plugin: JavaPlugin) : InventoryGUI {
 
     private fun setItemSuccess(e: InventoryClickEvent, name: String, vararg lore: String?) {
         val material = MailboxConfigUtil.successMaterial
-        val formattedName = TextFormatUtil.getFormattedText(name)
-        val formattedLore = TextFormatUtil.getFormattedTextList(*lore)
+        val formattedName = TextFormatHelper.getFormattedText(name)
+        val formattedLore = TextFormatHelper.getFormattedTextList(*lore)
         val customModelData = MailboxConfigUtil.successCustomModelData
         val positions = getButtonPos(e.slot)
 

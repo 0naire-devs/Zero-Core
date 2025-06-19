@@ -3,7 +3,7 @@ package kr.hyfata.zero.util.config
 import kr.hyfata.zero.ZeroCore
 import kr.hyfata.zero.config.IConfig
 import kr.hyfata.zero.modules.mailbox.dto.MailboxButton
-import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.helper.format.TextFormatHelper
 import org.bukkit.Material
 
 object MailboxConfigUtil {
@@ -48,8 +48,8 @@ object MailboxConfigUtil {
         val config: IConfig = config
 
         result.positions = config.config.getIntegerList("$path.pos")
-        result.name = config.getString("$path.txt", "ERROR")?.let { TextFormatUtil.getFormattedText(it) }
-        config.getString("$path.lore", "")?.let { TextFormatUtil.getFormattedText(it) }?.split("\n".toRegex())
+        result.name = config.getString("$path.txt", "ERROR")?.let { TextFormatHelper.getFormattedText(it) }
+        config.getString("$path.lore", "")?.let { TextFormatHelper.getFormattedText(it) }?.split("\n".toRegex())
             ?.dropLastWhile { it.isEmpty() }?.let {
                 result.setLore(
                     it.toTypedArray()

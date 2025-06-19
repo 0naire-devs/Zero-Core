@@ -1,10 +1,26 @@
-package kr.hyfata.zero.util
+package kr.hyfata.zero.helper.format
 
 import kr.hyfata.zero.ZeroCore
+import kr.hyfata.zero.util.VaultUtil
 import org.bukkit.entity.Player
 import java.text.DecimalFormat
 
-object TextFormatUtil {
+object TextFormatHelper {
+    fun getFormattedText(player: Player, text: String): String {
+        val placeholders = mapOf(
+            "formattedBalance" to { numberFont(getFormattedBalance(player) ?: "\uF801\uE02D") },
+            "balance" to { getFormattedBalance(player) ?: "0" },
+            "playerName" to { player.name },
+            "world" to { getFormattedWorld(player.world.name) ?: "" }
+        )
+
+        var result = getFormattedText(text) // 기존 getFormattedText(text: String) 함수를 호출하여 기본 서식 적용
+        for ((placeholder, valueProvider) in placeholders) {
+            result = result.replace("\${$placeholder}", valueProvider())
+        }
+        return result
+    }
+
     fun numberFont(text: String): String {
         return text.replace("1", "\uF801\uE024")
             .replace("2", "\uF801\uE025")
@@ -17,14 +33,6 @@ object TextFormatUtil {
             .replace("9", "\uF801\uE02C")
             .replace("0", "\uF801\uE02D")
             .replace(",", "\uF801\uE02E")
-    }
-
-    fun getFormattedText(player: Player, text: String): String {
-        return getFormattedText(text)
-            .replace("\${formattedBalance}", numberFont(getFormattedBalance(player)!!))
-            .replace("\${balance}", getFormattedBalance(player)!!)
-            .replace("\${playerName}", player.name)
-            .replace("\${world}", getFormattedWorld(player.world.name)!!)
     }
 
     fun getFormattedText(text: String): String {

@@ -1,5 +1,6 @@
 package kr.hyfata.zero.util
 
+import kr.hyfata.zero.helper.format.TextFormatHelper
 import java.sql.Timestamp
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -11,14 +12,14 @@ object TimeUtil {
     fun getRemainingTimeText(expire: Timestamp): String {
         val currentTime = Timestamp(Date().time)
         if (currentTime.after(expire)) {
-            return TextFormatUtil.getFormattedText("&c만료됨")
+            return TextFormatHelper.getFormattedText("&c만료됨")
         } else {
             val milliseconds = expire.getTime() - currentTime.getTime()
             val seconds = milliseconds.toInt() / 1000
             val minutes = seconds / 60
             val hours = minutes / 60
             val days = hours / 24
-            return TextFormatUtil.getFormattedText("&c만료까지 남은 시간: " + days + "일 " + hours % 24 + "시간 " + minutes % 60 + "분 " + seconds % 60 + "초")
+            return TextFormatHelper.getFormattedText("&c만료까지 남은 시간: " + days + "일 " + hours % 24 + "시간 " + minutes % 60 + "분 " + seconds % 60 + "초")
         }
     }
 

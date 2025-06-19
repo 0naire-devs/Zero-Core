@@ -2,7 +2,7 @@ package kr.hyfata.zero.modules.mailbox.handler
 
 import kr.hyfata.zero.modules.mailbox.dto.Mailbox
 import kr.hyfata.zero.util.ItemUtil
-import kr.hyfata.zero.util.TextFormatUtil
+import kr.hyfata.zero.helper.format.TextFormatHelper
 import kr.hyfata.zero.util.TimeUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
@@ -31,7 +31,7 @@ class MailboxHandler {
     private fun sendMailTo(sender: Player, targetUUID: String, expireDate: String?, expireTime: String?) {
         val itemStack = sender.inventory.itemInMainHand
         if (itemStack.type.isAir()) {
-            sender.sendMessage(TextFormatUtil.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"))
+            sender.sendMessage(TextFormatHelper.getFormattedText("&c손에 아무것도 들고 있지 않아 우편을 전송하지 못했습니다!"))
             return
         }
         val convertedItem = ItemUtil.itemStackToBase64(itemStack)
@@ -55,9 +55,9 @@ class MailboxHandler {
                     }
                 }
             }
-            sender.sendMessage(TextFormatUtil.getFormattedText("&a우편을 성공적으로 보냈습니다!"))
+            sender.sendMessage(TextFormatHelper.getFormattedText("&a우편을 성공적으로 보냈습니다!"))
         } catch (e: SQLException) {
-            sender.sendMessage(TextFormatUtil.getFormattedText("&c우편을 보내는 도중 오류가 발생했습니다!"))
+            sender.sendMessage(TextFormatHelper.getFormattedText("&c우편을 보내는 도중 오류가 발생했습니다!"))
             e.printStackTrace(System.err)
         }
     }
@@ -70,13 +70,13 @@ class MailboxHandler {
         }
 
         if (remainingMailCount > 0) {
-            p.sendMessage(TextFormatUtil.getFormattedText("&9[우편] &f새로운 우편이 &e" + remainingMailCount + "개 &f있습니다!"))
+            p.sendMessage(TextFormatHelper.getFormattedText("&9[우편] &f새로운 우편이 &e" + remainingMailCount + "개 &f있습니다!"))
             val clickMessage: Component = LegacyComponentSerializer.legacyAmpersand().deserialize(
-                TextFormatUtil.getFormattedText("&9[우편] &e&n여기&r&f를 눌러 우편함을 여세요!")
+                TextFormatHelper.getFormattedText("&9[우편] &e&n여기&r&f를 눌러 우편함을 여세요!")
             ).clickEvent(ClickEvent.runCommand("/우편함"))
             p.sendMessage(clickMessage)
         } else {
-            p.sendMessage(TextFormatUtil.getFormattedText("&9[우편] &f새로운 우편이 없습니다!"))
+            p.sendMessage(TextFormatHelper.getFormattedText("&9[우편] &f새로운 우편이 없습니다!"))
         }
     }
 }
