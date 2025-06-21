@@ -1,5 +1,6 @@
-package kr.hyfata.zero.config
+package kr.hyfata.zero.modules.mailbox
 
+import kr.hyfata.zero.config.IConfig
 import kr.hyfata.zero.util.config.ConfigUtil
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin

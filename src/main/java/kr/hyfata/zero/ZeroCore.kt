@@ -9,6 +9,7 @@ class ZeroCore : JavaPlugin() {
 
     override fun onEnable() {
         server.pluginManager.registerEvents(InventoryEventListener(), this)
+        server.pluginManager.registerEvents(ZeroGlobalListener(), this)
         ConfigUtil.init(this)
         initModules()
     }

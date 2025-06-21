@@ -3,6 +3,8 @@ package kr.hyfata.zero.modules.scoreboard
 import fr.mrmicky.fastboard.FastBoard
 import kr.hyfata.zero.ZeroCore
 import kr.hyfata.zero.helper.format.TextFormatHelper
+import kr.hyfata.zero.modules.scoreboard.listener.ScoreboardCommand
+import kr.hyfata.zero.modules.scoreboard.listener.ScoreboardListener
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin

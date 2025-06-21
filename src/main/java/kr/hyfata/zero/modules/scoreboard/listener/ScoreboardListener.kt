@@ -1,6 +1,7 @@
-package kr.hyfata.zero.modules.scoreboard
+package kr.hyfata.zero.modules.scoreboard.listener
 
 import kr.hyfata.zero.ZeroCore
+import kr.hyfata.zero.modules.scoreboard.ZeroScoreBoard
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent

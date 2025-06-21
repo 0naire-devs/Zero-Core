@@ -11,7 +11,8 @@ object TextFormatHelper {
             "formattedBalance" to { numberFont(getFormattedBalance(player) ?: "\uF801\uE02D") },
             "balance" to { getFormattedBalance(player) ?: "0" },
             "playerName" to { player.name },
-            "world" to { getFormattedWorld(player.world.name) ?: "" }
+            "world" to { getFormattedWorld(player.world.name) ?: "" },
+            "level" to { player.level.toString() }
         )
 
         var result = getFormattedText(text) // 기존 getFormattedText(text: String) 함수를 호출하여 기본 서식 적용

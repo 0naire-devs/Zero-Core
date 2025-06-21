@@ -1,12 +1,13 @@
-package kr.hyfata.zero.modules.scoreboard
+package kr.hyfata.zero.modules.scoreboard.listener
 
 import kr.hyfata.zero.ZeroCore
+import kr.hyfata.zero.modules.scoreboard.ZeroScoreBoard
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
-import java.util.*
+import java.util.Locale
 
 class ScoreboardCommand(var zeroScoreBoard: ZeroScoreBoard) : CommandExecutor, TabExecutor {
     override fun onCommand(commandSender: CommandSender, command: Command, s: String, args: Array<String>): Boolean {
