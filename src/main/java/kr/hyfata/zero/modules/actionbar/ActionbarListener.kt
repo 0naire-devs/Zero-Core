@@ -9,7 +9,7 @@ class ActionbarListener : Listener {
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.getPlayer()
-        val maxHp = player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
+        val maxHp = player.getAttribute(Attribute.MAX_HEALTH)!!.value
         val currentHp = player.health
         val hunger = player.foodLevel
     }

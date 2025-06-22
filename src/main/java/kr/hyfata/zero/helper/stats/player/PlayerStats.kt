@@ -2,7 +2,7 @@ package kr.hyfata.zero.helper.stats.player
 
 import kr.hyfata.zero.helper.stats.entity.EntityStats
 
-class PlayerStats(val statPoint: PlayerStatPoint) : EntityStats() {
+class PlayerStats(val point: PlayerStatPoint) : EntityStats() {
     var attack = 0
     var criticalDamage = 0
     var criticalChance = 0
