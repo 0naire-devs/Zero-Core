@@ -2,11 +2,12 @@ package kr.hyfata.zero.helper.stats.player
 
 import kr.hyfata.zero.zeroDBCore.ZeroDB
 import org.bukkit.entity.Player
+import java.sql.SQLException
 
 class PlayerStatsDB {
+    @Throws(SQLException::class)
     fun getPlayerStats(p: Player): PlayerStats {
-        val point = PlayerStatPoint()
-        var stats : PlayerStats? = null
+        var result : PlayerStats? = null
         val uuid = p.uniqueId.toString()
         val query = "SELECT * FROM player_status WHERE uuid = ?"
 
@@ -14,6 +15,8 @@ class PlayerStatsDB {
             rs.statement.use { stmt ->
                 stmt.connection.use { ignored ->
                     if (rs.next()) {
+                        val point = PlayerStatPoint()
+
                         point.pointAmount = rs.getInt("point_amount")
                         point.hp = rs.getInt("hp")
                         point.str = rs.getInt("str")
@@ -22,18 +25,19 @@ class PlayerStatsDB {
                         point.skl = rs.getInt("skill")
                         point.int = rs.getInt("int")
 
-                        stats = PlayerStats(point)
-                        stats.currentHp = rs.getInt("current_hp")
-                        stats.level = rs.getInt("level")
-                        stats.currentXp = rs.getInt("xp")
-                        stats.currentMana = rs.getInt("mana")
+                        result = PlayerStats(point)
+                        result.currentHp = rs.getInt("current_hp")
+                        result.level = rs.getInt("level")
+                        result.currentXp = rs.getInt("xp")
+                        result.currentMana = rs.getInt("mana")
                     }
                 }
             }
         }
-        return stats ?: PlayerStats(point)
+        return result ?: PlayerStats(PlayerStatPoint()) // return default stats
     }
 
+    @Throws(SQLException::class)
     fun setPlayerStats(p: Player, stats: PlayerStats) {
         val uuid = p.uniqueId.toString()
         val statPoint = stats.point
