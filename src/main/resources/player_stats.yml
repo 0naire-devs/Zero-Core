@@ -1,0 +1,30 @@
+# 최대로 소유할 수 있는 스탯포인트 설정
+# 0으로 설정하면 무한
+max_stat_point:
+  point_amount: 0 # 스탯 레벨업할 때 필요한 포인트 최대 수량
+  hp: 0 # 최대 스탯 레벨
+  str: 0
+  agi: 0
+  vit: 0
+  skl: 0
+  int: 0
+
+# 플레이어 스탯 속성
+stats_properties:
+  # 스탯 레벨 증가에 따라 특성을 변화시키는 방정식을 정의
+  # 0으로 설정하면 아무런 특성을 변화시키지 않습니다.
+  # 예: "%hp_level% * 10"
+  expression:
+    attack: 0 # 공격력
+    critical: # 치명타
+      chance: 0 # 확률(%)
+      damage: 0 # 피해(%)
+    speed: 0 # 속도
+    defense: 0 # 방어력
+    super_cool_time_decrease: 0 # 궁극기 쿨타임 감소(%)
+    skill:
+      damage_increase: 0 # 스킬 피해 증가
+      level_limit: 0 # 스킬 레벨 제한
+    max_mana: 0 # 최대로 가질 수 있는 마나
+    max_xp: 0 # 플레이어가 레벨업까지 도달하는 최대 xp
+    max_hp: 0 # 최대 hp
