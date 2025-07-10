@@ -27,6 +27,7 @@ dependencies {
     implementation 'fr.mrmicky:fastboard:2.1.3'
     implementation 'net.objecthunter:exp4j:0.4.8'
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation("io.github.projectunified:uni-dialog-paper:1.3.1")
 }
 
 def targetJavaVersion = 21
