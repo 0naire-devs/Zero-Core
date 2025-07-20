@@ -2,9 +2,12 @@ package kr.hyfata.zero.config
 
 import kr.hyfata.zero.util.config.ConfigUtil
 import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.io.IOException
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
 abstract class AbstractConfig(private val configFilePath: String) {
     private lateinit var configFile: File
@@ -17,6 +20,20 @@ abstract class AbstractConfig(private val configFilePath: String) {
         configFile = File(plugin.dataFolder, configFilePath)
         ConfigUtil.createConfig(plugin, configFile, configFilePath)
         ConfigUtil.loadConfig(this, configFile)
+
+        // set default value
+        try {
+            val defConfigStream = plugin.getResource(configFilePath) // jar resource
+            if (defConfigStream != null) {
+                val defConfig =
+                    YamlConfiguration.loadConfiguration(InputStreamReader(defConfigStream, StandardCharsets.UTF_8))
+                config.setDefaults(defConfig)
+            }
+        } catch (e: Exception) {
+            plugin.logger.severe("Could not load jar config: " + e.message)
+        }
+
+        plugin.logger.info("Loaded config: $configFilePath")
     }
 
     fun setConfig(config: FileConfiguration) {

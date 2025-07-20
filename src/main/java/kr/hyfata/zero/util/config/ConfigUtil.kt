@@ -12,7 +12,7 @@ object ConfigUtil {
         }
     }
 
-        fun loadConfig(abstractConfig: AbstractConfig, configFile: File) {
+    fun loadConfig(abstractConfig: AbstractConfig, configFile: File) {
         abstractConfig.setConfig(YamlConfiguration.loadConfiguration(configFile)) // load data folder config file
     }
 
