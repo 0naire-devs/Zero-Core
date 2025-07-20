@@ -25,5 +25,6 @@ class ZeroMailbox(var plugin: JavaPlugin) {
 
     fun onDisable() {
         inventoryHandler.closeInventoryAllPlayers()
+        plugin.logger.info("Zero Mailbox has been disabled.")
     }
 }
