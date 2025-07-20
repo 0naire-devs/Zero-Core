@@ -1,13 +1,13 @@
 package kr.hyfata.zero
 
-import kr.hyfata.zero.config.IConfig
+import kr.hyfata.zero.config.AbstractConfig
 import kr.hyfata.zero.modules.mailbox.MailboxConfig
 import kr.hyfata.zero.modules.scoreboard.ScoreboardConfig
 import org.bukkit.plugin.java.JavaPlugin
 
 class ZeroConfig(plugin: JavaPlugin) {
-    var scoreboardConfig: IConfig = ScoreboardConfig()
-    var mailboxConfig: IConfig = MailboxConfig()
+    var scoreboardConfig: AbstractConfig = ScoreboardConfig()
+    var mailboxConfig: AbstractConfig = MailboxConfig()
 
     init {
         scoreboardConfig.init(plugin)

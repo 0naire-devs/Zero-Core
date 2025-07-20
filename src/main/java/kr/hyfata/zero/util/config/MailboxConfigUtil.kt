@@ -7,7 +7,7 @@ import kr.hyfata.zero.helper.format.TextFormatHelper
 import org.bukkit.Material
 
 object MailboxConfigUtil {
-    val config: IConfig
+        val config: AbstractConfig
         get() = ZeroCore.Companion.zeroConfig.mailboxConfig
 
     val mailBoxTitle: String?
@@ -45,7 +45,7 @@ object MailboxConfigUtil {
 
     private fun getButton(path: String?): MailboxButton {
         val result = MailboxButton()
-        val config: IConfig = config
+            
 
         result.positions = config.config.getIntegerList("$path.pos")
         result.name = config.getString("$path.txt", "ERROR")?.let { TextFormatHelper.getFormattedText(it) }
