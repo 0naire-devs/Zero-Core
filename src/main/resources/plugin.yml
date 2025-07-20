@@ -1,5 +1,5 @@
 name: ZeroCore
-version: '1.2.1'
+version: '1.2.2'
 main: kr.hyfata.zero.ZeroCore
 api-version: '1.21'
 softdepend:
