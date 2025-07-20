@@ -13,7 +13,7 @@ max_stat_point:
 stats_properties:
   # 스탯 레벨 증가에 따라 특성을 변화시키는 방정식을 정의
   # 0으로 설정하면 아무런 특성을 변화시키지 않습니다.
-  # 예: "%hp_level% * 10"
+  # 예: "%stat_hp% * 10"
   expression:
     attack: 0 # 공격력
     critical: # 치명타
