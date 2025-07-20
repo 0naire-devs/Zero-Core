@@ -1,7 +1,7 @@
 package kr.hyfata.zero.util.config
 
 import kr.hyfata.zero.ZeroCore
-import kr.hyfata.zero.config.IConfig
+import kr.hyfata.zero.config.AbstractConfig
 import kr.hyfata.zero.modules.mailbox.dto.MailboxButton
 import kr.hyfata.zero.helper.format.TextFormatHelper
 import org.bukkit.Material
