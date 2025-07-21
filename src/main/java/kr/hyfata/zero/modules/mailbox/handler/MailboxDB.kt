@@ -2,11 +2,14 @@ package kr.hyfata.zero.modules.mailbox.handler
 
 import kr.hyfata.zero.modules.mailbox.dto.Mailbox
 import kr.hyfata.zero.zeroDBCore.ZeroDB
+import kr.hyfata.zero.zeroDBCore.ZeroDBCore
 import org.bukkit.entity.Player
 import java.sql.SQLException
 import kotlin.collections.ArrayList
 
 class MailboxDB {
+    val zeroDB: ZeroDB = ZeroDBCore.getInstance().zeroDB
+
     @Throws(SQLException::class)
     fun getMailboxes(p: Player): ArrayList<Mailbox?> {
         val result = ArrayList<Mailbox?>()
@@ -20,7 +23,7 @@ class MailboxDB {
                 "AND r.mail_id = m.mail_id" +
                 ")) " +
                 "ORDER BY m.sent_time"
-        ZeroDB.executeQuery(query, uuid, uuid).use { rs ->
+        zeroDB.executeQuery(query, uuid, uuid).use { rs ->
             rs.statement.use { stmt ->
                 stmt.connection.use { ignored ->
                     while (rs.next()) {
@@ -40,7 +43,7 @@ class MailboxDB {
 
     @Throws(SQLException::class)
     fun putMailbox(mailbox: Mailbox) {
-        ZeroDB.executeUpdate(
+        zeroDB.executeUpdate(
             "insert into mailbox (uuid, item, expiry_time) values (?, ?, ?)",
             mailbox.uuid, mailbox.item, mailbox.expiryTime
         )
@@ -49,17 +52,17 @@ class MailboxDB {
     @Throws(SQLException::class)
     fun readMailbox(p: Player, mailId: Int) {
         val uuid = p.uniqueId.toString()
-        ZeroDB.executeUpdate("insert into read_mail values(?, ?)", uuid, mailId)
+        zeroDB.executeUpdate("insert into read_mail values(?, ?)", uuid, mailId)
     }
 
     @Throws(SQLException::class)
     fun deleteMailbox(mailId: Int) {
-        ZeroDB.executeUpdate("delete from mailbox where mail_id = ?", mailId)
+        zeroDB.executeUpdate("delete from mailbox where mail_id = ?", mailId)
     }
 
     @Throws(SQLException::class)
     fun cleanupExpiredMailboxes() {
-        ZeroDB.executeUpdate("delete from mailbox where expiry_time < now() at time zone 'Asia/Seoul'")
+        zeroDB.executeUpdate("delete from mailbox where expiry_time < now() at time zone 'Asia/Seoul'")
     }
 
     @Throws(SQLException::class)
@@ -74,7 +77,7 @@ class MailboxDB {
                 "FROM read_mail r " +
                 "WHERE r.uuid = ? AND r.mail_id = m.mail_id" +
                 ")))"
-        ZeroDB.executeQuery(query, uuid, uuid).use { rs ->
+        zeroDB.executeQuery(query, uuid, uuid).use { rs ->
             rs.statement.use { stmt ->
                 stmt.connection.use { ignored ->
                     rs.next()
